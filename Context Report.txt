@@ -29,6 +29,13 @@ The app is structured to serve three distinct user roles, reflecting a clinic ma
 ## Active Files & Recent Development Focus
 - **Current Active Files:**
   - `Context Report.txt`
+  - `src/app/staff/page.tsx` (Staff dashboard UI updates)
+  - `src/lib/mockDb.ts` (Mock database for NextAuth)
   - `auth.ts` (NextAuth configuration using mock DB)
   - `c:\tmp\test-supabase.js` (Supabase connection and query test script)
-- **Recent Focus:** Setting up Authentication (NextAuth) and testing database integration using **Supabase** (migrating from a mock database).
+  - `c:\tmp\list-roles.js` (Testing Supabase roles)
+- **Recent Focus:** 
+  - Setting up Authentication (NextAuth) and testing database integration using **Supabase**.
+  - Replacing the mock database with actual Supabase tables.
+  - Updating the Staff Dashboard UI (`src/app/staff/page.tsx`) with new icons and medical consultation data.
+  - Provisioned a demo staff account (`staff@demo.com` / `staffPassword123`) directly in the Supabase database.
