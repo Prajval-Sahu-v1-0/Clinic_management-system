@@ -14,7 +14,7 @@ export interface UserResult {
 export async function getUser(email: string): Promise<UserResult | null> {
   const { data, error } = await supabase
     .from("user")
-    .select("user_id, name, email, provider, role:role(role_name)")
+    .select("user_id, name, email, provider, role:role_id(role_name)")
     .eq("email", email.toLowerCase())
     .single();
 
@@ -86,7 +86,7 @@ export async function validateUser(
 ): Promise<UserResult | null> {
   const { data, error } = await supabase
     .from("user")
-    .select("user_id, name, email, password_hash, provider, role:role(role_name)")
+    .select("user_id, name, email, password_hash, provider, role:role_id(role_name)")
     .eq("email", email.toLowerCase())  // ← email, not username
     .single();
 

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "@/hooks/useTheme";
 import {
   useDashboardStats,
   useUsers,
@@ -38,19 +40,19 @@ const ALL_PERMISSIONS = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const statusColor: Record<string, string> = {
-  active: "#16a34a", inactive: "#9ca3af", pending: "#d97706",
-  confirmed: "#2563eb", completed: "#16a34a", cancelled: "#dc2626",
+  active: "#0d9488", inactive: "#9ca3af", pending: "#d97706",
+  confirmed: "#2563eb", completed: "#0d9488", cancelled: "#dc2626",
   expired: "#9ca3af", refill: "#d97706",
 };
 
 const statusBg: Record<string, string> = {
-  active: "#f0fdf4", inactive: "#f9fafb", pending: "#fffbeb",
-  confirmed: "#eff6ff", completed: "#f0fdf4", cancelled: "#fef2f2",
+  active: "#f0fdfa", inactive: "#f9fafb", pending: "#fffbeb",
+  confirmed: "#eff6ff", completed: "#f0fdfa", cancelled: "#fef2f2",
   expired: "#f9fafb", refill: "#fffbeb",
 };
 
 const roleColor: Record<string, string> = {
-  admin: "#16a34a", staff: "#0d9488", patient: "#2563eb",
+  admin: "#0d9488", staff: "#0d9488", patient: "#2563eb",
 };
 
 // ─── Loading / Error States ───────────────────────────────────────────────────
@@ -105,7 +107,7 @@ function StatCard({
     }}>
       <div style={{
         width: 44, height: 44, borderRadius: 10,
-        background: "linear-gradient(135deg, #16a34a, #22c55e)",
+        background: "linear-gradient(135deg, #0d9488, #14b8a6)",
         display: "flex", alignItems: "center", justifyContent: "center",
         boxShadow: "0 4px 12px rgba(22,163,74,0.25)",
       }}>
@@ -120,7 +122,7 @@ function StatCard({
         <div style={{ fontSize: 13, color: "#6b7280", fontWeight: 500, marginTop: 2 }}>{label}</div>
       </div>
       {sub && !loading && (
-        <div style={{ fontSize: 12, color: "#16a34a", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+        <div style={{ fontSize: 12, color: "#0d9488", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
           <i className="fa-solid fa-arrow-trend-up" style={{ fontSize: 11 }} />
           {sub}
         </div>
@@ -151,7 +153,7 @@ function ActionButton({
   disabled?: boolean;
 }) {
   const styles: Record<string, React.CSSProperties> = {
-    primary: { background: "linear-gradient(135deg, #16a34a, #22c55e)", color: "#fff", border: "none", boxShadow: "0 2px 8px rgba(22,163,74,0.3)" },
+    primary: { background: "linear-gradient(135deg, #0d9488, #14b8a6)", color: "#fff", border: "none", boxShadow: "0 2px 8px rgba(22,163,74,0.3)" },
     secondary: { background: "#fff", color: "#374151", border: "1px solid #e5e7eb" },
     danger: { background: "#fff", color: "#dc2626", border: "1px solid #fee2e2" },
   };
@@ -189,9 +191,9 @@ function DashboardOverview({ setSection }: { setSection: (s: Section) => void })
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} — All systems operational
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 14px" }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16a34a", display: "inline-block", boxShadow: "0 0 0 3px rgba(22,163,74,0.2)" }} />
-          <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>All systems live</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f0fdfa", border: "1px solid #ccfbf1", borderRadius: 8, padding: "8px 14px" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#0d9488", display: "inline-block", boxShadow: "0 0 0 3px rgba(22,163,74,0.2)" }} />
+          <span style={{ fontSize: 12, color: "#0f766e", fontWeight: 600 }}>All systems live</span>
         </div>
       </div>
 
@@ -225,15 +227,15 @@ function DashboardOverview({ setSection }: { setSection: (s: Section) => void })
                 boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#16a34a";
-                (e.currentTarget as HTMLButtonElement).style.color = "#16a34a";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#0d9488";
+                (e.currentTarget as HTMLButtonElement).style.color = "#0d9488";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.borderColor = "#e5e7eb";
                 (e.currentTarget as HTMLButtonElement).style.color = "#374151";
               }}
             >
-              <i className={a.icon} style={{ fontSize: 14, color: "#16a34a" }} />
+              <i className={a.icon} style={{ fontSize: 14, color: "#0d9488" }} />
               {a.label}
             </button>
           ))}
@@ -246,7 +248,7 @@ function DashboardOverview({ setSection }: { setSection: (s: Section) => void })
           <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em" }}>Today's Appointments</div>
           <button
             onClick={() => setSection("appointments")}
-            style={{ fontSize: 12, color: "#16a34a", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5 }}
+            style={{ fontSize: 12, color: "#0d9488", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5 }}
           >
             View all <i className="fa-solid fa-arrow-right" style={{ fontSize: 10 }} />
           </button>
@@ -276,8 +278,8 @@ function DashboardOverview({ setSection }: { setSection: (s: Section) => void })
                 onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.background = "#f9fafb"}
                 onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.background = "transparent"}
               >
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <i className="fa-solid fa-clipboard-list" style={{ color: "#16a34a", fontSize: 16 }} />
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#f0fdfa", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <i className="fa-solid fa-clipboard-list" style={{ color: "#0d9488", fontSize: 16 }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>{apt.patient}</div>
@@ -515,7 +517,7 @@ function UsersTable({ filterRole }: { filterRole?: "patient" | "staff" | "admin"
                 fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase",
                 letterSpacing: "0.1em", marginBottom: 14, display: "flex", alignItems: "center", gap: 7,
               }}>
-                <i className="fa-solid fa-key" style={{ color: "#16a34a", fontSize: 12 }} />
+                <i className="fa-solid fa-key" style={{ color: "#0d9488", fontSize: 12 }} />
                 Change Password
               </div>
 
@@ -568,8 +570,8 @@ function UsersTable({ filterRole }: { filterRole?: "patient" | "staff" | "admin"
               )}
               {pwSuccess && (
                 <div style={{
-                  marginTop: 12, padding: "10px 14px", background: "#f0fdf4",
-                  border: "1px solid #bbf7d0", borderRadius: 8, color: "#16a34a",
+                  marginTop: 12, padding: "10px 14px", background: "#f0fdfa",
+                  border: "1px solid #ccfbf1", borderRadius: 8, color: "#0d9488",
                   fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8,
                 }}>
                   <i className="fa-solid fa-circle-check" style={{ fontSize: 13 }} />
@@ -670,7 +672,7 @@ function AppointmentsSection() {
                   <td style={{ padding: "14px 18px", fontSize: 13, color: "#6b7280" }}>{apt.doctor}</td>
                   <td style={{ padding: "14px 18px", fontSize: 13, color: "#374151", fontWeight: 500 }}>
                     {apt.date} <span style={{ color: "#9ca3af" }}>·</span>{" "}
-                    <span style={{ color: "#16a34a", fontWeight: 700 }}>{apt.time}</span>
+                    <span style={{ color: "#0d9488", fontWeight: 700 }}>{apt.time}</span>
                   </td>
                   <td style={{ padding: "14px 18px" }}>
                     <span style={{ fontSize: 12, color: "#6b7280", background: "#f3f4f6", borderRadius: 6, padding: "3px 10px", fontWeight: 500 }}>{apt.type}</span>
@@ -730,7 +732,7 @@ function AccessSection() {
     setSaving(false);
   };
 
-  const COLORS = ["#16a34a", "#0d9488", "#2563eb", "#7c3aed", "#d97706", "#dc2626", "#059669"];
+  const COLORS = ["#0d9488", "#0d9488", "#2563eb", "#7c3aed", "#d97706", "#dc2626", "#059669"];
 
   const permCategories: Record<string, { perms: string[]; icon: string }> = {
     "Patient Management": { perms: ["View Patients", "Edit Patients", "Delete Patients"], icon: "fa-solid fa-user-injured" },
@@ -787,9 +789,9 @@ function AccessSection() {
         </div>
         <div style={{ padding: 10, borderTop: "1px solid #f3f4f6" }}>
           <button
-            onClick={() => addRole("New Role", "#16a34a", [])}
+            onClick={() => addRole("New Role", "#0d9488", [])}
             style={{
-              width: "100%", background: "linear-gradient(135deg, #16a34a, #22c55e)",
+              width: "100%", background: "linear-gradient(135deg, #0d9488, #14b8a6)",
               border: "none", borderRadius: 8, padding: "9px 0", color: "#fff",
               fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
@@ -837,7 +839,7 @@ function AccessSection() {
             {Object.entries(permCategories).map(([cat, { perms, icon }]) => (
               <div key={cat} style={{ marginBottom: 24 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, display: "flex", alignItems: "center", gap: 7 }}>
-                  <i className={icon} style={{ color: "#16a34a", fontSize: 12 }} />
+                  <i className={icon} style={{ color: "#0d9488", fontSize: 12 }} />
                   {cat}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -934,7 +936,7 @@ function PrescriptionsSection() {
                   <td style={{ padding: "14px 18px", fontSize: 13, color: "#6b7280" }}>{rx.doctor}</td>
                   <td style={{ padding: "14px 18px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <i className="fa-solid fa-capsules" style={{ color: "#16a34a", fontSize: 13 }} />
+                      <i className="fa-solid fa-capsules" style={{ color: "#0d9488", fontSize: 13 }} />
                       <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{rx.medication}</span>
                     </div>
                   </td>
@@ -976,8 +978,8 @@ function ProfileSection() {
     <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-start" }}>
       <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16, padding: 32, flex: "0 0 280px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
         <div style={{ position: "relative" }}>
-          <div style={{ width: 80, height: 80, borderRadius: 20, background: "linear-gradient(135deg, #16a34a, #22c55e)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 700, boxShadow: "0 8px 24px rgba(22,163,74,0.3)" }}>JO</div>
-          <div style={{ position: "absolute", bottom: -4, right: -4, width: 22, height: 22, borderRadius: "50%", background: "#16a34a", border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 80, height: 80, borderRadius: 20, background: "linear-gradient(135deg, #0d9488, #14b8a6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 700, boxShadow: "0 8px 24px rgba(22,163,74,0.3)" }}>JO</div>
+          <div style={{ position: "absolute", bottom: -4, right: -4, width: 22, height: 22, borderRadius: "50%", background: "#0d9488", border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <i className="fa-solid fa-check" style={{ color: "#fff", fontSize: 9 }} />
           </div>
         </div>
@@ -985,11 +987,11 @@ function ProfileSection() {
           <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", fontFamily: "'Outfit', sans-serif" }}>James Okafor</div>
           <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>james@clinic.com</div>
         </div>
-        <Badge label="Chief Administrator" color="#16a34a" bg="#f0fdf4" />
+        <Badge label="Chief Administrator" color="#0d9488" bg="#f0fdfa" />
       </div>
       <div style={{ flex: 1, minWidth: 300, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16, padding: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 16, fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 9 }}>
-          <i className="fa-solid fa-lock" style={{ color: "#16a34a", fontSize: 16 }} />
+          <i className="fa-solid fa-lock" style={{ color: "#0d9488", fontSize: 16 }} />
           Security
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1039,6 +1041,8 @@ const SECTION_TITLES: Record<Section, string> = {
 
 export default function AdminPage() {
   const [section, setSection] = useState<Section>("dashboard");
+  const router = useRouter();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <>
@@ -1051,43 +1055,281 @@ export default function AdminPage() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
         input::placeholder { color: #9ca3af; }
-        input:focus { border-color: #16a34a !important; box-shadow: 0 0 0 3px rgba(22,163,74,0.1) !important; }
+        input:focus { border-color: #0d9488 !important; box-shadow: 0 0 0 3px rgba(22,163,74,0.1) !important; }
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
+        /* ═══════════════════════════════════════════════════════
+           COMPREHENSIVE DARK MODE
+           (overrides every inline-styled light colour)
+           ═══════════════════════════════════════════════════════ */
+        [data-theme="dark"] { color-scheme: dark; }
+
+        /* ── Scrollbar ── */
+        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* ── Global surface / text ── */
+        [data-theme="dark"] div,
+        [data-theme="dark"] aside,
+        [data-theme="dark"] main,
+        [data-theme="dark"] header,
+        [data-theme="dark"] section {
+          transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        /* ── Cards, panels, table wrappers (background:#fff  →  #1e293b) ── */
+        [data-theme="dark"] div[style*="background: rgb(255, 255, 255)"],
+        [data-theme="dark"] div[style*="background:#fff"],
+        [data-theme="dark"] div[style*="background: #fff"] {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
+
+        /* ── Alt surfaces (background:#f9fafb / #f3f4f6  →  #162032 / #0f172a) ── */
+        [data-theme="dark"] div[style*="background: rgb(249, 250, 251)"],
+        [data-theme="dark"] div[style*="background:#f9fafb"],
+        [data-theme="dark"] div[style*="background: #f9fafb"],
+        [data-theme="dark"] div[style*="background: rgb(243, 244, 246)"],
+        [data-theme="dark"] div[style*="background:#f3f4f6"],
+        [data-theme="dark"] div[style*="background: #f3f4f6"] {
+          background: #162032 !important;
+          border-color: #334155 !important;
+        }
+
+        /* light teal surfaces */
+        [data-theme="dark"] div[style*="background: rgb(240, 253, 250)"],
+        [data-theme="dark"] div[style*="background:#f0fdfa"],
+        [data-theme="dark"] div[style*="background: #f0fdfa"] {
+          background: #0c2a22 !important;
+          border-color: #134e3a !important;
+        }
+
+        /* ── Main text (#111827 → #e2e8f0) ── */
+        [data-theme="dark"] div[style*="color: rgb(17, 24, 39)"],
+        [data-theme="dark"] div[style*="color:#111827"],
+        [data-theme="dark"] div[style*="color: #111827"],
+        [data-theme="dark"] span[style*="color: rgb(17, 24, 39)"],
+        [data-theme="dark"] span[style*="color:#111827"],
+        [data-theme="dark"] span[style*="color: #111827"],
+        [data-theme="dark"] h1[style*="color:#111827"],
+        [data-theme="dark"] h1[style*="color: #111827"],
+        [data-theme="dark"] h2[style*="color:#111827"],
+        [data-theme="dark"] h2[style*="color: #111827"],
+        [data-theme="dark"] h2[style*="color: rgb(17, 24, 39)"] {
+          color: #e2e8f0 !important;
+        }
+
+        /* Secondary text (#374151 → #cbd5e1) */
+        [data-theme="dark"] div[style*="color: rgb(55, 65, 81)"],
+        [data-theme="dark"] div[style*="color:#374151"],
+        [data-theme="dark"] div[style*="color: #374151"],
+        [data-theme="dark"] span[style*="color: rgb(55, 65, 81)"],
+        [data-theme="dark"] span[style*="color:#374151"],
+        [data-theme="dark"] span[style*="color: #374151"] {
+          color: #cbd5e1 !important;
+        }
+
+        /* Muted text (#6b7280 → #94a3b8) */
+        [data-theme="dark"] div[style*="color: rgb(107, 114, 128)"],
+        [data-theme="dark"] div[style*="color:#6b7280"],
+        [data-theme="dark"] div[style*="color: #6b7280"],
+        [data-theme="dark"] span[style*="color: rgb(107, 114, 128)"],
+        [data-theme="dark"] span[style*="color:#6b7280"],
+        [data-theme="dark"] span[style*="color: #6b7280"],
+        [data-theme="dark"] label[style*="color:#374151"],
+        [data-theme="dark"] label[style*="color: #374151"] {
+          color: #94a3b8 !important;
+        }
+
+        /* Subtle text (#9ca3af → #64748b) */
+        [data-theme="dark"] div[style*="color: rgb(156, 163, 175)"],
+        [data-theme="dark"] div[style*="color:#9ca3af"],
+        [data-theme="dark"] div[style*="color: #9ca3af"],
+        [data-theme="dark"] span[style*="color: rgb(156, 163, 175)"],
+        [data-theme="dark"] span[style*="color:#9ca3af"],
+        [data-theme="dark"] span[style*="color: #9ca3af"],
+        [data-theme="dark"] p[style*="color:#9ca3af"],
+        [data-theme="dark"] p[style*="color: #9ca3af"] {
+          color: #64748b !important;
+        }
+
+        /* ── Borders ── */
+        [data-theme="dark"] div[style*="border: 1px solid rgb(229, 231, 235)"],
+        [data-theme="dark"] div[style*="border: 1px solid #e5e7eb"] {
+          border-color: #334155 !important;
+        }
+        [data-theme="dark"] [style*="border-bottom: 1px solid rgb(243, 244, 246)"],
+        [data-theme="dark"] [style*="border-bottom: 1px solid #f3f4f6"],
+        [data-theme="dark"] [style*="border-top: 1px solid rgb(243, 244, 246)"],
+        [data-theme="dark"] [style*="border-top: 1px solid #f3f4f6"] {
+          border-color: #1e293b !important;
+        }
+
+        /* ── Tables ── */
+        [data-theme="dark"] table { border-collapse: collapse; }
+        [data-theme="dark"] thead tr {
+          background: #162032 !important;
+          border-color: #1e293b !important;
+        }
+        [data-theme="dark"] thead th {
+          color: #64748b !important;
+        }
+        [data-theme="dark"] tbody tr {
+          border-color: #1e293b !important;
+        }
+        [data-theme="dark"] tbody tr:hover {
+          background: #1a2740 !important;
+        }
+        [data-theme="dark"] td {
+          border-color: #1e293b !important;
+        }
+        [data-theme="dark"] td[style*="color: rgb(17, 24, 39)"],
+        [data-theme="dark"] td[style*="color:#111827"],
+        [data-theme="dark"] td[style*="color: #111827"] {
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] td[style*="color: rgb(107, 114, 128)"],
+        [data-theme="dark"] td[style*="color:#6b7280"],
+        [data-theme="dark"] td[style*="color: #6b7280"] {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] td[style*="color: rgb(156, 163, 175)"],
+        [data-theme="dark"] td[style*="color:#9ca3af"],
+        [data-theme="dark"] td[style*="color: #9ca3af"] {
+          color: #64748b !important;
+        }
+
+        /* ── Inputs ── */
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] input::placeholder { color: #64748b !important; }
+
+        /* ── Buttons (secondary / danger) ── */
+        [data-theme="dark"] button[style*="background: rgb(255, 255, 255)"],
+        [data-theme="dark"] button[style*="background:#fff"],
+        [data-theme="dark"] button[style*="background: #fff"] {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #cbd5e1 !important;
+        }
+        [data-theme="dark"] button[style*="background: rgb(249, 250, 251)"],
+        [data-theme="dark"] button[style*="background:#f9fafb"],
+        [data-theme="dark"] button[style*="background: #f9fafb"] {
+          background: #162032 !important;
+          border-color: #334155 !important;
+          color: #cbd5e1 !important;
+        }
+
+        /* filter tabs */
+        [data-theme="dark"] div[style*="background: rgb(243, 244, 246)"][style*="border-radius"] {
+          background: #1e293b !important;
+        }
+
+        /* ── Modals ── */
+        [data-theme="dark"] div[style*="background: rgba(0, 0, 0"] {
+          background: rgba(0,0,0,0.6) !important;
+        }
+
+        /* ── Dosage / small tags ── */
+        [data-theme="dark"] span[style*="background: rgb(243, 244, 246)"],
+        [data-theme="dark"] span[style*="background:#f3f4f6"],
+        [data-theme="dark"] span[style*="background: #f3f4f6"] {
+          background: #1e293b !important;
+          color: #94a3b8 !important;
+        }
+
+        /* ── Loading shimmer ── */
+        [data-theme="dark"] div[style*="shimmer"] {
+          background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%) !important;
+        }
+
+        /* ── Error / Success alert transparency ── */
+        [data-theme="dark"] div[style*="background: rgb(254, 242, 242)"],
+        [data-theme="dark"] div[style*="background:#fef2f2"],
+        [data-theme="dark"] div[style*="background: #fef2f2"] {
+          background: #350a0a !important;
+          border-color: #7f1d1d !important;
+        }
+        [data-theme="dark"] div[style*="background: rgb(240, 253, 250)"][style*="border"] {
+          background: #0c2a22 !important;
+          border-color: #134e3a !important;
+        }
+
+        /* ── Teal accents (keep them punchy) ── */
+        [data-theme="dark"] span[style*="color: rgb(15, 118, 110)"],
+        [data-theme="dark"] span[style*="color:#0f766e"],
+        [data-theme="dark"] span[style*="color: #0f766e"] {
+          color: #2dd4bf !important;
+        }
+
+        /* ── Nav sidebar items (hover states handled by JS too) ── */
+        [data-theme="dark"] nav button {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] nav button:hover {
+          background: #162032 !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] nav button[style*="background: rgb(240, 253, 250)"] {
+          background: #0c2a22 !important;
+          border-color: #134e3a !important;
+          color: #2dd4bf !important;
+        }
+        [data-theme="dark"] nav button[style*="background: rgb(240, 253, 250)"] i {
+          color: #fff !important;
+        }
+        [data-theme="dark"] nav button[style*="background: rgb(240, 253, 250)"] div[style*="background: rgb(13, 148, 136)"] {
+          box-shadow: 0 4px 12px rgba(45,212,191,0.35);
+        }
+
+        /* ── Toggle button ── */
+        .adm-theme-toggle {
+          background: none; border: 1px solid #e5e7eb; border-radius: 8px;
+          width: 34px; height: 34px; display: flex; align-items: center;
+          justify-content: center; cursor: pointer; transition: all 0.2s;
+          flex-shrink: 0;
+        }
+        [data-theme="dark"] .adm-theme-toggle { border-color: #334155; background: #1e293b; }
+        .adm-theme-toggle:hover { transform: scale(1.1); }
+
       `}</style>
 
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#f3f4f6" }}>
+      <div data-theme={isDark ? "dark" : "light"} style={{ display: "flex", height: "100vh", overflow: "hidden", background: isDark ? "#0f172a" : "#f3f4f6", transition: "background 0.2s", colorScheme: isDark ? "dark" : "light" }}>
         {/* Sidebar */}
-        <aside style={{ width: 232, flexShrink: 0, background: "#fff", borderRight: "1px solid #e5e7eb", display: "flex", flexDirection: "column", padding: "0 0 16px" }}>
-          <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #f3f4f6" }}>
+        <aside className="adm-sidebar" style={{ width: 232, flexShrink: 0, background: isDark ? "#1e293b" : "#fff", borderRight: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`, display: "flex", flexDirection: "column", padding: "0 0 16px", transition: "background 0.2s, border-color 0.2s" }}>
+          <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${isDark ? "#334155" : "#f3f4f6"}` }}>
             <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #16a34a, #22c55e)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(22,163,74,0.3)" }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #0d9488, #14b8a6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(22,163,74,0.3)" }}>
                 <i className="fa-solid fa-plus" style={{ color: "#fff", fontSize: 14 }} />
               </div>
               <div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 16, color: "#111827", lineHeight: 1.1, letterSpacing: "-0.3px" }}>MediPanel</div>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 16, color: isDark ? "#e2e8f0" : "#111827", lineHeight: 1.1, letterSpacing: "-0.3px" }}>MediPanel</div>
                 <div style={{ fontSize: 10, color: "#9ca3af", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Admin Portal</div>
               </div>
             </div>
           </div>
 
           <div style={{ padding: "16px 16px 6px" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.12em" }}>Main Menu</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: isDark ? "#64748b" : "#9ca3af", textTransform: "uppercase", letterSpacing: "0.12em" }}>Main Menu</div>
           </div>
 
           <nav style={{ flex: 1, padding: "0 8px", display: "flex", flexDirection: "column", gap: 1 }}>
             {NAV.map((n) => (
               <button
                 key={n.id}
-                onClick={() => setSection(n.id)}
+                onClick={() => n.id === "access" ? router.push("/admin/access-role") : setSection(n.id)}
                 style={{
                   display: "flex", alignItems: "center", gap: 11, padding: "10px 12px",
                   borderRadius: 9,
-                  background: section === n.id ? "#f0fdf4" : "transparent",
-                  border: section === n.id ? "1px solid #bbf7d0" : "1px solid transparent",
-                  color: section === n.id ? "#15803d" : "#6b7280",
+                  background: section === n.id ? "#f0fdfa" : "transparent",
+                  border: section === n.id ? "1px solid #ccfbf1" : "1px solid transparent",
+                  color: section === n.id ? "#0f766e" : "#6b7280",
                   fontSize: 13, fontWeight: section === n.id ? 700 : 500,
                   cursor: "pointer", textAlign: "left", transition: "all 0.15s", fontFamily: "inherit",
                 }}
@@ -1104,57 +1346,69 @@ export default function AdminPage() {
                   }
                 }}
               >
-                <div style={{ width: 30, height: 30, borderRadius: 7, background: section === n.id ? "#16a34a" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 7, background: section === n.id ? "#0d9488" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}>
                   <i className={n.icon} style={{ fontSize: 13, color: section === n.id ? "#fff" : "#9ca3af" }} />
                 </div>
                 {n.label}
-                {section === n.id && <i className="fa-solid fa-chevron-right" style={{ marginLeft: "auto", fontSize: 10, color: "#16a34a" }} />}
+                {section === n.id && <i className="fa-solid fa-chevron-right" style={{ marginLeft: "auto", fontSize: 10, color: "#0d9488" }} />}
               </button>
             ))}
           </nav>
 
-          <div style={{ margin: "0 8px", padding: "12px", background: "#f9fafb", borderRadius: 10, display: "flex", alignItems: "center", gap: 10, border: "1px solid #f3f4f6" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #16a34a, #22c55e)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>JO</div>
+          <div style={{ margin: "0 8px", padding: "12px", background: isDark ? "#162032" : "#f9fafb", borderRadius: 10, display: "flex", alignItems: "center", gap: 10, border: `1px solid ${isDark ? "#334155" : "#f3f4f6"}` }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #0d9488, #14b8a6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>JO</div>
             <div style={{ flex: 1, overflow: "hidden" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>James Okafor</div>
-              <div style={{ fontSize: 11, color: "#9ca3af" }}>Administrator</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: isDark ? "#e2e8f0" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>James Okafor</div>
+              <div style={{ fontSize: 11, color: "#94a3b8" }}>Administrator</div>
             </div>
             <i 
               className="fa-solid fa-right-from-bracket" 
-              style={{ color: "#d1d5db", fontSize: 14, cursor: "pointer", transition: "color 0.15s" }}
+              style={{ color: isDark ? "#475569" : "#d1d5db", fontSize: 14, cursor: "pointer", transition: "color 0.15s" }}
               title="Sign Out"
               onClick={() => signOut({ callbackUrl: "/" })}
               onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = "#dc2626"}
-              onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = "#d1d5db"}
+              onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = isDark ? "#475569" : "#d1d5db"}
             />
           </div>
         </aside>
 
         {/* Main */}
         <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <header style={{ padding: "0 28px", height: 58, borderBottom: "1px solid #e5e7eb", background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <header style={{ padding: "0 28px", height: 58, borderBottom: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`, background: isDark ? "#1e293b" : "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, transition: "background 0.2s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <h1 style={{ fontSize: 17, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#111827" }}>{SECTION_TITLES[section]}</h1>
-              <span style={{ color: "#d1d5db" }}>/</span>
-              <span style={{ fontSize: 13, color: "#9ca3af" }}>Overview</span>
+              <h1 style={{ fontSize: 17, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: isDark ? "#e2e8f0" : "#111827" }}>{SECTION_TITLES[section]}</h1>
+              <span style={{ color: isDark ? "#475569" : "#d1d5db" }}>/</span>
+              <span style={{ fontSize: 13, color: "#94a3b8" }}>Overview</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ fontSize: 13, color: "#9ca3af", display: "flex", alignItems: "center", gap: 6 }}>
                 <i className="fa-solid fa-calendar-day" style={{ fontSize: 12 }} />
                 {new Date().toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
               </div>
-              <button style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 8, width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" }}>
-                <i className="fa-solid fa-bell" style={{ color: "#9ca3af", fontSize: 14 }} />
-                <span style={{ position: "absolute", top: 7, right: 7, width: 6, height: 6, borderRadius: "50%", background: "#16a34a", border: "1.5px solid #fff" }} />
+              {/* Dark mode toggle */}
+              <button
+                onClick={toggleTheme}
+                className="adm-theme-toggle"
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {isDark ? (
+                  <i className="fa-solid fa-sun" style={{ color: "#f59e0b", fontSize: 14 }} />
+                ) : (
+                  <i className="fa-solid fa-moon" style={{ color: "#6b7280", fontSize: 14 }} />
+                )}
               </button>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "6px 12px" }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
-                <span style={{ fontSize: 12, color: "#15803d", fontWeight: 700 }}>Operational</span>
+              <button style={{ background: "none", border: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`, borderRadius: 8, width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" }}>
+                <i className="fa-solid fa-bell" style={{ color: "#9ca3af", fontSize: 14 }} />
+                <span style={{ position: "absolute", top: 7, right: 7, width: 6, height: 6, borderRadius: "50%", background: "#0d9488", border: `1.5px solid ${isDark ? "#1e293b" : "#fff"}` }} />
+              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, background: isDark ? "#0c2a22" : "#f0fdfa", border: `1px solid ${isDark ? "#134e3a" : "#ccfbf1"}`, borderRadius: 8, padding: "6px 12px" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#0d9488", display: "inline-block" }} />
+                <span style={{ fontSize: 12, color: isDark ? "#2dd4bf" : "#0f766e", fontWeight: 700 }}>Operational</span>
               </div>
             </div>
           </header>
 
-          <div style={{ flex: 1, overflowY: "auto", padding: "26px 28px" }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "26px 28px", background: isDark ? "#0f172a" : "#f3f4f6", transition: "background 0.2s", color: isDark ? "#e2e8f0" : "#111827" }}>
             {section === "dashboard" && <DashboardOverview setSection={setSection} />}
             {section === "patients" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1169,7 +1423,7 @@ export default function AdminPage() {
               </div>
             )}
             {section === "appointments" && <AppointmentsSection />}
-            {section === "access" && <AccessSection />}
+            {/* Access & Roles now lives at /admin/access-role */}
             {section === "prescriptions" && <PrescriptionsSection />}
             {section === "profile" && <ProfileSection />}
           </div>
