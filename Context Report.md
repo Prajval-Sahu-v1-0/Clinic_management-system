@@ -71,19 +71,16 @@ The app is structured to serve three distinct user roles:
 ## Active Files & Recent Development Focus
 - **Current Active Files:**
   - `Context Report.md`
-  - `src/lib/rbac/index.ts` (RBAC utilities)
-  - `src/app/api/admin/roles/` (6 API route files)
-  - `src/app/admin/access-role/page.tsx` (Discord-like role management UI)
-  - `src/app/admin/page.tsx` (Admin dashboard)
-  - `src/app/staff/page.tsx` (Staff dashboard with dark mode)
-  - `src/hooks/adminQueries.ts` (Server-side Supabase queries)
+  - `src/app/globals.css`
+  - `src/app/admin/page.tsx`
+  - `src/app/admin/access-role/page.tsx`
+  - `src/lib/supabase.ts`
 - **Recent Focus:**
   - **Finished Work:**
-    - Staff Dashboard: teal theme + dark mode toggle.
-    - Admin Dashboard: Supabase integration for stats, users, roles, appointments, prescriptions.
-    - Discord-like Access & Role system backend: `src/lib/rbac/index.ts` utilities and 6 API routes (`/api/admin/roles/*`) with `manage_roles` permission enforcement.
-    - Discord-like Access & Role system UI: `src/app/admin/access-role/page.tsx` with Role Editor, Permission Toggles, and User-Role assignment modal.
-    - Admin sidebar "Access & Roles" now navigates to `/admin/access-role` via `router.push()`.
-    - `useSession` integrated into `/admin/access-role` page with auth guard (redirects unauthenticated/non-admin users).
-  - **Remaining (Manual Testing):**
-    - Verify the full flow end-to-end in the browser against live Supabase data (role creation, permission toggling, user-role assignment, priority reordering).
+    - **Dashboard Architecture Analysis**: Performed comprehensive structural analysis of the multi-dashboard system, mapped roles to corresponding dashboards, identified UI component redundancies, and defined a unified set of features to enable a more modular and scalable architecture.
+    - **Dark Mode Theme Refinement**: Improved visual quality, consistency, color palette, and contrast of the dark theme across dashboards for a polished and accessible user experience.
+    - **Access & Role System (RBAC)**: Defined a Discord-like role management backend/UI with permission toggles, user-role assignments, and Supabase integration.
+    - **Admin Analytics Integration**: Connected Supabase backend for dynamic loading of stats, users, roles, appointments, and prescriptions.
+  - **Next Steps:**
+    - Begin refactoring based on the modular and scalable architecture defined during the structural analysis.
+    - Continue end-to-end testing of the newly created RBAC system in the browser against live Supabase data.

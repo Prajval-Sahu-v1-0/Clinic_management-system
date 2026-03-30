@@ -24,6 +24,8 @@ import {
     updateRole,
     createRole,
     changeUserPassword,
+    createAppointment,
+    createPrescription,
 } from "@/hooks/adminQueries";
 
 // ─── Generic fetcher hook ─────────────────────────────────────────────────────
@@ -109,7 +111,22 @@ export function useAppointments() {
         }
     }, [query.refetch]);
 
-    return { ...query, cancel };
+    const addAppointment = useCallback(async (
+        patientId: string,
+        staffId: string,
+        time: string,
+        type: string
+    ) => {
+        try {
+            await createAppointment(patientId, staffId, time, type);
+            query.refetch();
+        } catch (err: any) {
+            console.error("Failed to create appointment:", err);
+            throw err;
+        }
+    }, [query.refetch]);
+
+    return { ...query, cancel, addAppointment };
 }
 
 export function useTodaysAppointments() {
@@ -131,7 +148,22 @@ export function usePrescriptions() {
         }
     }, [query.refetch]);
 
-    return { ...query, renew };
+    const addPrescription = useCallback(async (
+        patientId: string,
+        staffId: string,
+        medicationName: string,
+        dosage: string
+    ) => {
+        try {
+            await createPrescription(patientId, staffId, medicationName, dosage);
+            query.refetch();
+        } catch (err: any) {
+            console.error("Failed to create prescription:", err);
+            throw err;
+        }
+    }, [query.refetch]);
+
+    return { ...query, renew, addPrescription };
 }
 
 // ─── Roles ─────────────────────────────────────────────────────────────────────

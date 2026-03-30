@@ -247,6 +247,24 @@ export async function updateAppointmentStatus(
     if (error) throw error;
 }
 
+export async function createAppointment(
+    patientId: string,
+    staffId: string,
+    time: string,
+    type: string
+): Promise<void> {
+    const { error } = await supabase
+        .from("appointment")
+        .insert({
+            patient_id: patientId,
+            staff_id: staffId,
+            appointment_time: time,
+            appointment_type: type,
+            status: "pending",
+        });
+    if (error) throw error;
+}
+
 // ─── Prescriptions ─────────────────────────────────────────────────────────────
 
 export async function fetchPrescriptions(): Promise<Prescription[]> {
@@ -284,6 +302,24 @@ export async function updatePrescriptionStatus(
         .from("prescription")
         .update({ status })
         .eq("prescription_id", prescriptionId);
+    if (error) throw error;
+}
+
+export async function createPrescription(
+    patientId: string,
+    staffId: string,
+    medicationName: string,
+    dosage: string
+): Promise<void> {
+    const { error } = await supabase
+        .from("prescription")
+        .insert({
+            patient_id: patientId,
+            staff_id: staffId,
+            medication_name: medicationName,
+            dosage,
+            status: "active",
+        });
     if (error) throw error;
 }
 

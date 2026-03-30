@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -14,6 +14,11 @@ import {
   useRoles,
 } from "@/hooks/useAdminData";
 import type { User, Appointment, Prescription, Role, DashboardStats } from "@/hooks/types";
+
+const getPermissions = (session: any) => {
+  if (!session?.user) return [];
+  return Array.isArray(session.user.permissions) ? session.user.permissions : [];
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -145,12 +150,13 @@ function Badge({ label, color, bg }: { label: string; color: string; bg: string 
 }
 
 function ActionButton({
-  children, variant = "secondary", onClick, disabled,
+  children, variant = "secondary", onClick, disabled, type = "button"
 }: {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "danger";
   onClick?: () => void;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset";
 }) {
   const styles: Record<string, React.CSSProperties> = {
     primary: { background: "linear-gradient(135deg, #0d9488, #14b8a6)", color: "#fff", border: "none", boxShadow: "0 2px 8px rgba(22,163,74,0.3)" },
@@ -159,6 +165,7 @@ function ActionButton({
   };
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -376,10 +383,6 @@ function UsersTable({ filterRole }: { filterRole?: "patient" | "staff" | "admin"
             }}
           />
         </div>
-        <ActionButton variant="primary">
-          <i className="fa-solid fa-plus" style={{ fontSize: 12 }} />
-          Add {filterRole ? filterRole.charAt(0).toUpperCase() + filterRole.slice(1) : "User"}
-        </ActionButton>
       </div>
 
       {error && <ErrorMessage message={error} />}
@@ -604,7 +607,37 @@ function UsersTable({ filterRole }: { filterRole?: "patient" | "staff" | "admin"
 
 function AppointmentsSection() {
   const [filter, setFilter] = useState<string>("all");
-  const { data: appointments, loading, error, cancel } = useAppointments();
+  const { data: appointments, loading, error, cancel, addAppointment } = useAppointments();
+  
+  const { data: users } = useUsers();
+  const { data: patients } = usePatients();
+  const activeStaff = (users ?? []).filter(u => u.status === "active" && (u.role === "staff" || u.role === "admin"));
+  const activePatients = (patients ?? []).filter(p => p.status === "active");
+
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({ patientId: "", staffId: "", date: "", time: "", type: "Checkup" });
+  const [saving, setSaving] = useState(false);
+  const [modalErr, setModalErr] = useState("");
+
+  const handleSubmit = async () => {
+    setModalErr("");
+    if (!formData.patientId || !formData.staffId || !formData.date || !formData.time || !formData.type) {
+        setModalErr("All fields are required.");
+        return;
+    }
+    const dateTime = `${formData.date}T${formData.time}:00`;
+    setSaving(true);
+    try {
+        await addAppointment(formData.patientId, formData.staffId, dateTime, formData.type);
+        setShowModal(false);
+        setFormData({ patientId: "", staffId: "", date: "", time: "", type: "Checkup" });
+    } catch (e: any) {
+        setModalErr(e.message || "Failed to create appointment");
+    } finally {
+        setSaving(false);
+    }
+  };
+
   const statuses = ["all", "confirmed", "pending", "completed", "cancelled"];
 
   const filtered = (appointments ?? []).filter(
@@ -632,7 +665,7 @@ function AppointmentsSection() {
           ))}
         </div>
         <div style={{ marginLeft: "auto" }}>
-          <ActionButton variant="primary">
+          <ActionButton variant="primary" onClick={() => setShowModal(true)}>
             <i className="fa-solid fa-calendar-plus" style={{ fontSize: 12 }} />
             New Appointment
           </ActionButton>
@@ -698,6 +731,67 @@ function AppointmentsSection() {
           </tbody>
         </table>
       </div>
+
+      {/* New Appointment Modal */}
+      {showModal && (
+        <div onClick={() => setShowModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(3px)" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, width: 420, maxWidth: "92vw", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
+            <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: "#111827", fontFamily: "'Outfit', sans-serif" }}>New Appointment</div>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = "#f3f4f6"} onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}>
+                <i className="fa-solid fa-xmark" style={{ color: "#9ca3af", fontSize: 16 }} />
+              </button>
+            </div>
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Patient</label>
+                <select value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }}>
+                   <option value="">Select Patient</option>
+                   {activePatients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Doctor/Staff</label>
+                <select value={formData.staffId} onChange={(e) => setFormData({ ...formData, staffId: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }}>
+                   <option value="">Select Staff</option>
+                   {activeStaff.map(s => <option key={s.id} value={s.id}>Dr. {s.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Date</label>
+                    <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Time</label>
+                    <input type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }} />
+                  </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Type</label>
+                <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }}>
+                   <option value="Checkup">Checkup</option>
+                   <option value="Follow-up">Follow-up</option>
+                   <option value="Consultation">Consultation</option>
+                   <option value="Procedure">Procedure</option>
+                </select>
+              </div>
+              {modalErr && (
+                <div style={{ marginTop: 8, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fee2e2", borderRadius: 8, color: "#dc2626", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                  <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 13 }} />
+                  {modalErr}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "14px 24px", borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "flex-end", gap: 10, background: "#f9fafb" }}>
+              <ActionButton onClick={() => setShowModal(false)}>Cancel</ActionButton>
+              <ActionButton variant="primary" onClick={handleSubmit} disabled={saving}>
+                {saving ? <><i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 11 }} /> Saving…</> : <><i className="fa-solid fa-check" style={{ fontSize: 11 }} /> Create</>}
+              </ActionButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -708,27 +802,43 @@ function AccessSection() {
   const { data: roles, loading, error, saveRole, addRole } = useRoles();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [editPermissions, setEditPermissions] = useState<string[]>([]);
+  const [editColor, setEditColor] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const selectedRole = (roles ?? []).find((r) => r.id === selectedId) ?? (roles ?? [])[0] ?? null;
+  useEffect(() => {
+    if (!selectedId && (roles ?? []).length > 0) {
+      const first = (roles ?? [])[0];
+      setSelectedId(first.id);
+      setEditName(first.name);
+      setEditPermissions(first.permissions);
+      setEditColor(first.color);
+    }
+  }, [roles, selectedId]);
+
+  const selectedRole = (roles ?? []).find((r) => r.id === selectedId) ?? null;
 
   const selectRole = (r: Role) => {
     setSelectedId(r.id);
     setEditName(r.name);
+    setEditPermissions(r.permissions);
+    setEditColor(r.color);
   };
 
   const togglePermission = (perm: string) => {
-    if (!selectedRole) return;
-    const newPerms = selectedRole.permissions.includes(perm)
-      ? selectedRole.permissions.filter((p) => p !== perm)
-      : [...selectedRole.permissions, perm];
-    saveRole(selectedRole.id, { permissions: newPerms });
+    setEditPermissions(prev => 
+      prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]
+    );
   };
 
   const handleSave = async () => {
     if (!selectedRole) return;
     setSaving(true);
-    await saveRole(selectedRole.id, { role_name: editName } as any);
+    await saveRole(selectedRole.id, { 
+        role_name: editName,
+        color: editColor,
+        permissions: editPermissions 
+    } as any);
     setSaving(false);
   };
 
@@ -812,7 +922,7 @@ function AccessSection() {
           boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
         }}>
           <div style={{ padding: "18px 24px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", gap: 14, background: "#f9fafb" }}>
-            <span style={{ width: 14, height: 14, borderRadius: "50%", background: activeRole.color, boxShadow: `0 0 0 3px ${activeRole.color}30` }} />
+            <span style={{ width: 14, height: 14, borderRadius: "50%", background: editColor || activeRole.color, boxShadow: `0 0 0 3px ${editColor || activeRole.color}30` }} />
             <input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
@@ -820,14 +930,14 @@ function AccessSection() {
             />
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600, marginRight: 4 }}>Color</span>
-              {COLORS.map((c) => (
+              {COLORS.map((c, idx) => (
                 <button
-                  key={c}
-                  onClick={() => saveRole(activeRole.id, { color: c })}
+                  key={`${c}-${idx}`}
+                  onClick={() => setEditColor(c)}
                   style={{
                     width: 18, height: 18, borderRadius: "50%", background: c,
-                    border: activeRole.color === c ? "2px solid #111827" : "2px solid transparent",
-                    cursor: "pointer", outline: activeRole.color === c ? "2px solid #fff" : "none",
+                    border: editColor === c ? "2px solid #111827" : "2px solid transparent",
+                    cursor: "pointer", outline: editColor === c ? "2px solid #fff" : "none",
                     outlineOffset: "1px", transition: "all 0.15s",
                   }}
                 />
@@ -844,7 +954,8 @@ function AccessSection() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {perms.map((perm) => {
-                    const enabled = activeRole.permissions.includes(perm);
+                    const enabled = editPermissions.includes(perm);
+                    const drawColor = editColor || activeRole.color;
                     return (
                       <div
                         key={perm}
@@ -852,16 +963,16 @@ function AccessSection() {
                         style={{
                           display: "flex", alignItems: "center", justifyContent: "space-between",
                           padding: "12px 16px",
-                          background: enabled ? activeRole.color + "08" : "#f9fafb",
-                          border: `1px solid ${enabled ? activeRole.color + "40" : "#f3f4f6"}`,
+                          background: enabled ? drawColor + "08" : "#f9fafb",
+                          border: `1px solid ${enabled ? drawColor + "40" : "#f3f4f6"}`,
                           borderRadius: 9, cursor: "pointer", transition: "all 0.15s",
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <i className={enabled ? "fa-solid fa-circle-check" : "fa-regular fa-circle"} style={{ color: enabled ? activeRole.color : "#d1d5db", fontSize: 15 }} />
+                          <i className={enabled ? "fa-solid fa-circle-check" : "fa-regular fa-circle"} style={{ color: enabled ? drawColor : "#d1d5db", fontSize: 15 }} />
                           <span style={{ fontSize: 13, fontWeight: 500, color: enabled ? "#111827" : "#6b7280" }}>{perm}</span>
                         </div>
-                        <div style={{ width: 40, height: 22, borderRadius: 11, background: enabled ? activeRole.color : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                        <div style={{ width: 40, height: 22, borderRadius: 11, background: enabled ? drawColor : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
                           <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: enabled ? 21 : 3, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                         </div>
                       </div>
@@ -873,7 +984,11 @@ function AccessSection() {
           </div>
 
           <div style={{ padding: "14px 24px", borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "flex-end", gap: 10, background: "#f9fafb" }}>
-            <ActionButton onClick={() => { setEditName(activeRole.name); }}>
+            <ActionButton onClick={() => { 
+                setEditName(activeRole?.name ?? ""); 
+                setEditColor(activeRole?.color ?? ""); 
+                setEditPermissions(activeRole?.permissions ?? []); 
+            }}>
               <i className="fa-solid fa-rotate-left" style={{ fontSize: 11 }} /> Reset
             </ActionButton>
             <ActionButton variant="primary" onClick={handleSave} disabled={saving}>
@@ -892,12 +1007,40 @@ function AccessSection() {
 // ─── Section: Prescriptions ────────────────────────────────────────────────────
 
 function PrescriptionsSection() {
-  const { data: prescriptions, loading, error, renew } = usePrescriptions();
+  const { data: prescriptions, loading, error, renew, addPrescription } = usePrescriptions();
+  
+  const { data: users } = useUsers();
+  const { data: patients } = usePatients();
+  const activeStaff = (users ?? []).filter(u => u.status === "active" && (u.role === "staff" || u.role === "admin"));
+  const activePatients = (patients ?? []).filter(p => p.status === "active");
+
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({ patientId: "", staffId: "", medication: "", dosage: "" });
+  const [saving, setSaving] = useState(false);
+  const [modalErr, setModalErr] = useState("");
+
+  const handleSubmit = async () => {
+    setModalErr("");
+    if (!formData.patientId || !formData.staffId || !formData.medication || !formData.dosage) {
+        setModalErr("All fields are required.");
+        return;
+    }
+    setSaving(true);
+    try {
+        await addPrescription(formData.patientId, formData.staffId, formData.medication, formData.dosage);
+        setShowModal(false);
+        setFormData({ patientId: "", staffId: "", medication: "", dosage: "" });
+    } catch (e: any) {
+        setModalErr(e.message || "Failed to create prescription");
+    } finally {
+        setSaving(false);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <ActionButton variant="primary">
+        <ActionButton variant="primary" onClick={() => setShowModal(true)}>
           <i className="fa-solid fa-file-prescription" style={{ fontSize: 12 }} />
           New Prescription
         </ActionButton>
@@ -965,6 +1108,56 @@ function PrescriptionsSection() {
           </tbody>
         </table>
       </div>
+
+      {/* Write Prescription Modal */}
+      {showModal && (
+        <div onClick={() => setShowModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(3px)" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, width: 420, maxWidth: "92vw", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
+            <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: "#111827", fontFamily: "'Outfit', sans-serif" }}>Write Prescription</div>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = "#f3f4f6"} onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}>
+                <i className="fa-solid fa-xmark" style={{ color: "#9ca3af", fontSize: 16 }} />
+              </button>
+            </div>
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Patient</label>
+                <select value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }}>
+                   <option value="">Select Patient</option>
+                   {activePatients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Doctor/Staff</label>
+                <select value={formData.staffId} onChange={(e) => setFormData({ ...formData, staffId: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }}>
+                   <option value="">Select Staff</option>
+                   {activeStaff.map(s => <option key={s.id} value={s.id}>Dr. {s.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Medication Name</label>
+                <input type="text" placeholder="e.g. Amoxicillin 500mg" value={formData.medication} onChange={(e) => setFormData({ ...formData, medication: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Dosage & Instructions</label>
+                <input type="text" placeholder="e.g. 1 pill twice a day for 7 days" value={formData.dosage} onChange={(e) => setFormData({ ...formData, dosage: e.target.value })} style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit" }} />
+              </div>
+              {modalErr && (
+                <div style={{ marginTop: 8, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fee2e2", borderRadius: 8, color: "#dc2626", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                  <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 13 }} />
+                  {modalErr}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "14px 24px", borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "flex-end", gap: 10, background: "#f9fafb" }}>
+              <ActionButton onClick={() => setShowModal(false)}>Cancel</ActionButton>
+              <ActionButton variant="primary" onClick={handleSubmit} disabled={saving}>
+                {saving ? <><i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 11 }} /> Saving…</> : <><i className="fa-solid fa-check" style={{ fontSize: 11 }} /> Create</>}
+              </ActionButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1021,14 +1214,14 @@ function ProfileSection() {
 
 // ─── Sidebar Nav ───────────────────────────────────────────────────────────────
 
-const NAV: { id: Section; icon: string; label: string }[] = [
+const NAV: { id: Section; icon: string; label: string; requiredPermission?: string }[] = [
   { id: "dashboard", icon: "fa-solid fa-gauge-high", label: "Dashboard" },
-  { id: "patients", icon: "fa-solid fa-user-injured", label: "Patients" },
-  { id: "staff", icon: "fa-solid fa-user-nurse", label: "Staff & Users" },
-  { id: "appointments", icon: "fa-solid fa-calendar-days", label: "Appointments" },
-  { id: "access", icon: "fa-solid fa-shield-halved", label: "Access & Roles" },
-  { id: "prescriptions", icon: "fa-solid fa-pills", label: "Prescriptions" },
-  { id: "profile", icon: "fa-solid fa-gear", label: "Settings" },
+  { id: "patients", icon: "fa-solid fa-user-injured", label: "Patients", requiredPermission: "view_patients" },
+  { id: "staff", icon: "fa-solid fa-user-nurse", label: "Staff & Users", requiredPermission: "manage_staff" },
+  { id: "appointments", icon: "fa-solid fa-calendar-days", label: "Appointments", requiredPermission: "view_appointments" },
+  { id: "access", icon: "fa-solid fa-shield-halved", label: "Access & Roles", requiredPermission: "manage_roles" },
+  { id: "prescriptions", icon: "fa-solid fa-pills", label: "Prescriptions", requiredPermission: "view_prescriptions" },
+  { id: "profile", icon: "fa-solid fa-gear", label: "Settings" }
 ];
 
 const SECTION_TITLES: Record<Section, string> = {
@@ -1037,12 +1230,35 @@ const SECTION_TITLES: Record<Section, string> = {
   prescriptions: "Prescriptions", profile: "Profile & Settings",
 };
 
+const NoAccess = () => (
+  <div style={{ padding: 16, color: "#9ca3af", fontSize: 14 }}>
+    You do not have permission to view this section.
+  </div>
+);
+
 // ─── Root Component ────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
+  const { data: session, status } = useSession();
   const [section, setSection] = useState<Section>("dashboard");
   const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
+
+  const hasPermission = (permission: string) => {
+    const permissions = getPermissions(session);
+    return permissions.includes(permission);
+  };
+
+  useEffect(() => {
+    if (status === "loading") return; // wait for session to resolve before computing allowed sections
+    const allowedSections = NAV
+      .filter(n => !n.requiredPermission || hasPermission(n.requiredPermission))
+      .map(n => n.id);
+
+    if (!allowedSections.includes(section)) {
+      setSection(allowedSections[0] || "dashboard");
+    }
+  }, [session, section, status]);
 
   return (
     <>
@@ -1320,7 +1536,7 @@ export default function AdminPage() {
           </div>
 
           <nav style={{ flex: 1, padding: "0 8px", display: "flex", flexDirection: "column", gap: 1 }}>
-            {NAV.map((n) => (
+            {NAV.filter(n => !n.requiredPermission || hasPermission(n.requiredPermission)).map((n) => (
               <button
                 key={n.id}
                 onClick={() => n.id === "access" ? router.push("/admin/access-role") : setSection(n.id)}
@@ -1411,20 +1627,28 @@ export default function AdminPage() {
           <div style={{ flex: 1, overflowY: "auto", padding: "26px 28px", background: isDark ? "#0f172a" : "#f3f4f6", transition: "background 0.2s", color: isDark ? "#e2e8f0" : "#111827" }}>
             {section === "dashboard" && <DashboardOverview setSection={setSection} />}
             {section === "patients" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <p style={{ color: "#9ca3af", fontSize: 14, marginBottom: 8 }}>All registered patients in the system.</p>
-                <UsersTable filterRole="patient" />
-              </div>
+              hasPermission("view_patients") ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <p style={{ color: "#9ca3af", fontSize: 14, marginBottom: 8 }}>All registered patients in the system.</p>
+                  <UsersTable filterRole="patient" />
+                </div>
+              ) : <NoAccess />
             )}
             {section === "staff" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <p style={{ color: "#9ca3af", fontSize: 14, marginBottom: 8 }}>Manage all users: staff, doctors, and administrators.</p>
-                <UsersTable />
-              </div>
+              hasPermission("manage_staff") ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <p style={{ color: "#9ca3af", fontSize: 14, marginBottom: 8 }}>Manage all users: staff, doctors, and administrators.</p>
+                  <UsersTable />
+                </div>
+              ) : <NoAccess />
             )}
-            {section === "appointments" && <AppointmentsSection />}
+            {section === "appointments" && (
+              hasPermission("view_appointments") ? <AppointmentsSection /> : <NoAccess />
+            )}
             {/* Access & Roles now lives at /admin/access-role */}
-            {section === "prescriptions" && <PrescriptionsSection />}
+            {section === "prescriptions" && (
+              hasPermission("view_prescriptions") ? <PrescriptionsSection /> : <NoAccess />
+            )}
             {section === "profile" && <ProfileSection />}
           </div>
         </main>
