@@ -20,7 +20,10 @@ import {
     fetchRoles,
     updateUserStatus,
     updatePatientStatus,
+    deletePatientRecord,
+    deleteUserRecord,
     updateAppointmentStatus,
+    updateAppointmentTime,
     updatePrescriptionStatus,
     updateRole,
     createRole,
@@ -75,20 +78,16 @@ export function useUsers() {
     const { data: session } = useSession();
     const query = useQuery(fetchUsers);
 
-    const deactivate = useCallback(async (userId: string) => {
-        try {
-            await updateUserStatus(userId, "inactive", session?.user?.id as string);
-            query.refetch();
-        } catch (err: any) {
-            console.error("Failed to deactivate user:", err);
-        }
+    const removeUser = useCallback(async (userId: string) => {
+        await deleteUserRecord(userId);
+        query.refetch();
     }, [query.refetch]);
 
     const resetPassword = useCallback(async (userId: string, newPassword: string) => {
         await changeUserPassword(userId, newPassword, session?.user?.id as string);
     }, []);
 
-    return { ...query, deactivate, resetPassword };
+    return { ...query, removeUser, resetPassword };
 }
 
 // ─── Patients ─────────────────────────────────────────────────────────────────
@@ -97,16 +96,12 @@ export function usePatients() {
     const { data: session } = useSession();
     const query = useQuery(fetchPatientUsers);
 
-    const deactivate = useCallback(async (patientId: string) => {
-        try {
-            await updatePatientStatus(patientId, "inactive", session?.user?.id as string);
-            query.refetch();
-        } catch (err: any) {
-            console.error("Failed to deactivate patient:", err);
-        }
+    const removePatient = useCallback(async (patientId: string) => {
+        await deletePatientRecord(patientId);
+        query.refetch();
     }, [query.refetch]);
 
-    return { ...query, deactivate };
+    return { ...query, removePatient };
 }
 
 // ─── Appointments ──────────────────────────────────────────────────────────────
@@ -121,6 +116,24 @@ export function useAppointments() {
             query.refetch();
         } catch (err: any) {
             console.error("Failed to cancel appointment:", err);
+        }
+    }, [query.refetch]);
+
+    const markCompleted = useCallback(async (appointmentId: string) => {
+        try {
+            await updateAppointmentStatus(appointmentId, "completed", session?.user?.id as string);
+            query.refetch();
+        } catch (err: any) {
+            console.error("Failed to complete appointment:", err);
+        }
+    }, [query.refetch]);
+
+    const updateTime = useCallback(async (appointmentId: string, datetime: string) => {
+        try {
+            await updateAppointmentTime(appointmentId, datetime, session?.user?.id as string);
+            query.refetch();
+        } catch (err: any) {
+            console.error("Failed to update appointment time:", err);
         }
     }, [query.refetch]);
 
@@ -139,7 +152,7 @@ export function useAppointments() {
         }
     }, [query.refetch]);
 
-    return { ...query, cancel, addAppointment };
+    return { ...query, cancel, markCompleted, updateTime, addAppointment };
 }
 
 export function useTodaysAppointments() {

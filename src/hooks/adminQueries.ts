@@ -33,8 +33,11 @@ function toMonthYear(iso: string): string {
 /** Formats an ISO datetime to separate date + time strings */
 function splitDateTime(iso: string): { date: string; time: string } {
     const d = new Date(iso);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     return {
-        date: d.toISOString().split("T")[0],
+        date: `${year}-${month}-${day}`,
         time: d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
     };
 }
@@ -173,11 +176,86 @@ export async function updatePatientStatus(
     if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("patient")
-        .update({ status, actor_id: actorId })
+        .update({ status })
         .eq("patient_id", patientId);
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
+export async function deletePatientRecord(patientId: string): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const { data: apts } = await supabase
+        .from("appointment")
+        .select("appointment_id")
+        .eq("patient_id", patientId)
+        .eq("status", "scheduled")
+        .gte("appointment_time", startOfToday.toISOString());
+    if (apts && apts.length > 0) throw new Error("Cannot delete patient: This patient has upcoming appointments.");
+
+    const { data: pres } = await supabase
+        .from("prescription")
+        .select("prescription_id")
+        .eq("patient_id", patientId)
+        .eq("status", "active");
+    if (pres && pres.length > 0) throw new Error("Cannot delete patient: This patient has active prescriptions.");
+
+    const { error } = await supabase
+        .from("patient")
+        .delete()
+        .eq("patient_id", patientId);
+    if (error) throw new Error(error.message || JSON.stringify(error));
+}
+
+export async function deleteUserRecord(userId: string): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const { data: userRec } = await supabase
+        .from("user")
+        .select("role:role_id(role_name)")
+        .eq("user_id", userId)
+        .single();
+        
+    if (userRec?.role?.role_name?.toLowerCase() === "permanent") {
+        throw new Error("Cannot delete user: This user has the 'permanent' system role.");
+    }
+
+    const { data: staffRec } = await supabase
+        .from("staff")
+        .select("staff_id")
+        .eq("user_id", userId)
+        .single();
+
+    if (staffRec) {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const { data: apts } = await supabase
+            .from("appointment")
+            .select("appointment_id")
+            .eq("staff_id", staffRec.staff_id)
+            .eq("status", "scheduled")
+            .gte("appointment_time", startOfToday.toISOString());
+        if (apts && apts.length > 0) throw new Error("Cannot delete user: This user is assigned to upcoming appointments.");
+
+        const { data: pres } = await supabase
+            .from("prescription")
+            .select("prescription_id")
+            .eq("staff_id", staffRec.staff_id)
+            .eq("status", "active");
+        if (pres && pres.length > 0) throw new Error("Cannot delete user: This user is assigned to active prescriptions.");
+    }
+
+    const { error } = await supabase
+        .from("user")
+        .delete()
+        .eq("user_id", userId);
+    if (error) throw new Error(error.message || JSON.stringify(error));
+}
 // ─── Appointments ──────────────────────────────────────────────────────────────
 
 export async function fetchAppointments(): Promise<Appointment[]> {
@@ -260,6 +338,20 @@ export async function updateAppointmentStatus(
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
+export async function updateAppointmentTime(
+    appointmentId: string,
+    datetime: string,
+    actorId: string
+): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    const { error } = await supabase
+        .from("appointment")
+        .update({ appointment_time: datetime })
+        .eq("appointment_id", appointmentId);
+    if (error) throw new Error(error.message || JSON.stringify(error));
+}
+
 export async function createAppointment(
     patientId: string,
     userIdAsStaff: string,
@@ -294,7 +386,7 @@ export async function createAppointment(
             staff_id: staffRec.staff_id,
             appointment_time: time,
             appointment_type: type,
-            status: "pending",
+            status: "scheduled",
         });
     if (error) throw new Error(error.message || JSON.stringify(error));
 }

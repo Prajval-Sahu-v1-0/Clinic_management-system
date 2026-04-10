@@ -1,13 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Badge, ActionButton, LoadingRows, ErrorMessage, statusColor, statusBg, roleColor } from "@/components/DashboardShared";
 import { useUsers } from "@/hooks/useAdminData";
 import type { User } from "@/hooks/types";
 
 export default function UsersSection() {
+  const { data: session } = useSession();
+  const activeName = session?.user?.name || "Unknown Admin";
+
   const [search, setSearch] = useState("");
-  const { data: allUsers, loading, error, deactivate, resetPassword } = useUsers();
+  const [actionErr, setActionErr] = useState("");
+  const { data: allUsers, loading, error, removeUser, resetPassword } = useUsers();
+
+  const [deletingEntity, setDeletingEntity] = useState<User | null>(null);
+  const [authChallenge, setAuthChallenge] = useState(false);
+  const [authInput, setAuthInput] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const expectedAuthString = deletingEntity ? `${activeName} - ${deletingEntity.name}` : "";
 
   const [editUser, setEditUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState("");
@@ -65,6 +77,7 @@ export default function UsersSection() {
         </div>
       </div>
 
+      {actionErr && <ErrorMessage message={actionErr} />}
       {error && <ErrorMessage message={error} />}
 
       <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
@@ -117,11 +130,14 @@ export default function UsersSection() {
                       </ActionButton>
                       <ActionButton
                         variant="danger"
-                        onClick={() => deactivate(u.id)}
-                        disabled={u.status === "inactive"}
+                        onClick={() => {
+                          setActionErr("");
+                          setDeletingEntity(u);
+                          setAuthChallenge(false);
+                          setAuthInput("");
+                        }}
                       >
-                        <i className="fa-solid fa-ban" style={{ fontSize: 11 }} />
-                        {u.status === "inactive" ? "Inactive" : "Deactivate"}
+                        <i className="fa-solid fa-trash" style={{ fontSize: 11 }} /> Delete
                       </ActionButton>
                     </div>
                   </td>
@@ -210,6 +226,111 @@ export default function UsersSection() {
                   : <><i className="fa-solid fa-floppy-disk" style={{ fontSize: 11 }} /> Update Password</>
                 }
               </ActionButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modals */}
+      {deletingEntity && (
+        <div
+          onClick={() => { setDeletingEntity(null); setAuthChallenge(false); }}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, backdropFilter: "blur(4px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 16, width: 400, maxWidth: "90vw",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", overflow: "hidden",
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ padding: "16px 24px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: "#111827", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: "#fee2e2", color: "#dc2626", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: 14 }} />
+                </div>
+                {authChallenge ? "Authentication Required" : "Confirm Deletion"}
+              </div>
+              <button 
+                onClick={() => { setDeletingEntity(null); setAuthChallenge(false); }}
+                style={{ background: "none", border: "none", cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <i className="fa-solid fa-xmark" style={{ color: "#9ca3af", fontSize: 16 }} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: "24px" }}>
+              {!authChallenge ? (
+                <>
+                  <p style={{ margin: 0, fontSize: 15, color: "#4b5563", lineHeight: 1.5 }}>
+                    Are you absolutely sure you want to permanently delete <strong>{deletingEntity.name}</strong>?
+                  </p>
+                  <p style={{ margin: "12px 0 0", fontSize: 13, color: "#6b7280" }}>
+                    This action cannot be undone. Any compliant historical records mapped here might cascade.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ margin: "0 0 16px", fontSize: 14, color: "#4b5563" }}>
+                    To authorize this deletion, please type the following confirmation signature exactly as it appears below:
+                  </p>
+                  <div style={{ background: "#f3f4f6", padding: "10px 14px", borderRadius: 8, fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "#111827", fontWeight: 600, letterSpacing: "-0.01em", userSelect: "all", marginBottom: 16, border: "1px dashed #d1d5db" }}>
+                    {expectedAuthString}
+                  </div>
+                  <input
+                    autoFocus
+                    placeholder="Type signature here..."
+                    value={authInput}
+                    onChange={(e) => setAuthInput(e.target.value)}
+                    style={{
+                      width: "100%", background: "#fff", border: authInput === expectedAuthString ? "1px solid #10b981" : "1px solid #d1d5db", 
+                      borderRadius: 8, padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'JetBrains Mono', monospace",
+                      boxSizing: "border-box", transition: "border 0.2s"
+                    }}
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: "16px 24px", borderTop: "1px solid #f3f4f6", background: "#f9fafb", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <ActionButton onClick={() => { setDeletingEntity(null); setAuthChallenge(false); }}>
+                Cancel
+              </ActionButton>
+              {!authChallenge ? (
+                <ActionButton variant="primary" onClick={() => setAuthChallenge(true)}>
+                  Proceed <i className="fa-solid fa-arrow-right" style={{ fontSize: 11, marginLeft: 4 }} />
+                </ActionButton>
+              ) : (
+                <ActionButton
+                  variant="danger"
+                  disabled={authInput !== expectedAuthString || isDeleting}
+                  onClick={async () => {
+                    setIsDeleting(true);
+                    try {
+                      await removeUser(deletingEntity.id);
+                      setDeletingEntity(null);
+                      setAuthChallenge(false);
+                    } catch(err: any) {
+                      setActionErr(err.message || "Failed to delete user");
+                      setDeletingEntity(null);
+                      setAuthChallenge(false);
+                    } finally {
+                      setIsDeleting(false);
+                    }
+                  }}
+                >
+                  {isDeleting ? <i className="fa-solid fa-circle-notch fa-spin" /> : <i className="fa-solid fa-trash" />} Confirm Delete
+                </ActionButton>
+              )}
             </div>
           </div>
         </div>
