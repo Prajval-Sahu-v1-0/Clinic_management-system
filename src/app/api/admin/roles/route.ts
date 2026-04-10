@@ -1,5 +1,6 @@
 import { requirePermission } from "@/lib/rbac";
 import { supabase } from "@/lib/supabase";
+import { logAudit } from "@/lib/audit";
 
 // GET — list all roles with their permissions + all available permissions
 export async function GET() {
@@ -46,11 +47,20 @@ export async function POST(req: Request) {
   const { role_name, priority } = await req.json();
   if (!role_name) return Response.json({ error: "role_name required" }, { status: 400 });
 
-  const { error } = await supabase
+  const { data: roleData, error } = await supabase
     .from("role")
-    .insert({ role_name, priority: priority ?? 99 });
+    .insert({ role_name, priority: priority ?? 99 })
+    .select()
+    .single();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
+  
+  await logAudit({
+    action: "create", actor_id: guard.session.user.id, actor_role: guard.session.user.role || "admin",
+    entity_type: "role", entity_id: roleData.role_id,
+    after_data: roleData
+  });
+
   return Response.json({ ok: true });
 }
 
@@ -62,11 +72,19 @@ export async function PATCH(req: Request) {
   const { role_id, role_name } = await req.json();
   if (!role_id || !role_name) return Response.json({ error: "role_id and role_name required" }, { status: 400 });
 
+  const { data: existing } = await supabase.from("role").select("*").eq("role_id", role_id).single();
+
   const { error } = await supabase
     .from("role")
     .update({ role_name })
     .eq("role_id", role_id);
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
+
+  await logAudit({
+    action: "update", actor_id: guard.session.user.id, actor_role: guard.session.user.role || "admin",
+    entity_type: "role", entity_id: role_id,
+    before_data: existing, after_data: { role_name }
+  });
   return Response.json({ ok: true });
 }

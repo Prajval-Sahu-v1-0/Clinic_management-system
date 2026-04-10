@@ -2,7 +2,53 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { validateUser, getUser, registerUser } from "@/lib/mockDb";
-import { getUserPermissions } from "@/lib/rbac";
+import { supabase } from "@/lib/supabase";
+
+// ─── Inline RBAC helpers (avoid importing from "use server" module) ───────────
+
+async function fetchUserRoles(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role:role_id(role_id, role_name, priority)")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("[AUTH] fetchUserRoles error:", error.message);
+    return [];
+  }
+
+  return (data as any[])
+    .map((d) => d.role)
+    .filter(Boolean)
+    .sort((a: any, b: any) => a.priority - b.priority)
+    .map((r: any) => (r.role_name as string).toLowerCase());
+}
+
+async function fetchUserPermissions(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select(`
+      role:role_id(
+        role_permissions(
+          permission:permission_id(name)
+        )
+      )
+    `)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("[AUTH] fetchUserPermissions error:", error.message);
+    return [];
+  }
+
+  const perms = new Set<string>();
+  for (const ur of data as any[]) {
+    for (const rp of ur.role?.role_permissions ?? []) {
+      if (rp.permission?.name) perms.add(rp.permission.name);
+    }
+  }
+  return Array.from(perms);
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -41,18 +87,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = (user as { role?: string }).role ?? "patient";
         token.name = user.name ?? "";
         token.email = user.email ?? "";
-        // Fetch and normalize permissions from RBAC junction tables.
-        // DB stores "View Patients" — normalize to "view_patients" to match UI keys.
+        // Fetch roles and permissions directly from Supabase
         try {
-          const rawPerms = await getUserPermissions(user.id as string);
+          const roles = await fetchUserRoles(user.id as string);
+          token.roles = roles.length > 0 ? roles : [token.role as string];
+
+          const rawPerms = await fetchUserPermissions(user.id as string);
+          // DB stores "View Patients" — normalize to "view_patients"
           token.permissions = rawPerms.map((p) =>
             p.toLowerCase().replace(/\s+/g, "_")
           );
-          console.log("[AUTH DEBUG] user.id:", user.id);
-          console.log("[AUTH DEBUG] rawPerms from DB:", rawPerms);
-          console.log("[AUTH DEBUG] normalized permissions:", token.permissions);
         } catch (err) {
-          console.error("[AUTH DEBUG] getUserPermissions FAILED:", err);
+          console.error("[AUTH] Failed to fetch roles/permissions:", err);
+          token.roles = [token.role as string];
           token.permissions = [];
         }
       }
@@ -62,6 +109,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = (token.role as string) ?? "patient";
+        session.user.roles = (token.roles as string[]) ?? [session.user.role];
         session.user.name = (token.name as string) ?? "";
         session.user.email = (token.email as string) ?? "";
         // Forward permissions from JWT token to session.

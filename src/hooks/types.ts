@@ -45,13 +45,12 @@ export interface DbStaff {
 }
 
 export interface DbAppointment {
-    appointment_id: number;
-    patient_id: number;
-    staff_id: number;
+    appointment_id: string;
+    patient_id: string | null;
+    staff_id: string | null;
     appointment_time: string; // ISO datetime
-    appointment_type: string;
-    status: "confirmed" | "pending" | "cancelled" | "completed";
-    created_by: number;
+    appointment_type: string | null;
+    status: string;
     // joined:
     patient?: Pick<DbPatient, "patient_name">;
     staff?: { user: Pick<DbUser, "name"> };
@@ -59,14 +58,13 @@ export interface DbAppointment {
 
 export interface DbPrescription {
     prescription_id: number;
-    patient_id: number;
-    staff_id: number;
-    medicine_id: number | null;
+    patient_id: string | null;   // uuid FK, nullable
+    staff_id: string | null;     // uuid FK, nullable
     medication_name: string;
     dosage: string;
-    status: "active" | "expired" | "refill";
-    prescribed_at: string;
-    created_at: string;
+    status: string;              // text, non-nullable
+    prescribed_at: string | null; // timestamptz, nullable
+    Dosage_end_Date: string | null; // date
     // joined:
     patient?: Pick<DbPatient, "patient_name">;
     staff?: { user: Pick<DbUser, "name"> };
@@ -103,7 +101,8 @@ export interface Prescription {
     medication: string;
     dosage: string;
     date: string;
-    status: "active" | "expired" | "refill";
+    dosageEndDate: string | null;
+    status: string;
 }
 
 export interface Role {

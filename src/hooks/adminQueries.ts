@@ -11,9 +11,10 @@ import type {
     User, Appointment, Prescription, Role, DashboardStats,
     DbUser, DbAppointment, DbPrescription, DbRole,
 } from "@/hooks/types";
+import { auth } from "@/../auth";
+import { logAudit } from "@/lib/audit";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 /** Derives initials avatar from a full name */
 function toAvatar(name: string): string {
     return name
@@ -95,7 +96,7 @@ export async function fetchUsers(): Promise<User[]> {
     `)
         .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 
     return (data as any[]).map((u) => {
         // Map role_name → simplified role token used by the frontend
@@ -132,7 +133,7 @@ export async function fetchPatientUsers(): Promise<User[]> {
         .select("patient_id, patient_name, email, status, created_at")
         .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 
     return (data as any[]).map((p) => ({
         id: String(p.patient_id),
@@ -149,24 +150,32 @@ export async function fetchPatientUsers(): Promise<User[]> {
 export async function updateUserStatus(
     userId: string,
     status: "active" | "inactive"
+,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("user")
-        .update({ status })
+        .update({ status, actor_id: actorId })
         .eq("user_id", userId);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 /** Update patient status */
 export async function updatePatientStatus(
     patientId: string,
     status: "active" | "inactive"
+,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("patient")
-        .update({ status })
+        .update({ status, actor_id: actorId })
         .eq("patient_id", patientId);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 // ─── Appointments ──────────────────────────────────────────────────────────────
@@ -184,17 +193,17 @@ export async function fetchAppointments(): Promise<Appointment[]> {
     `)
         .order("appointment_time", { ascending: true });
 
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 
     return (data as any[]).map((a) => {
         const { date, time } = splitDateTime(a.appointment_time);
         return {
-            id: `A${String(a.appointment_id).padStart(3, "0")}`,
+            id: a.appointment_id,
             patient: a.patient?.patient_name ?? "Unknown",
             doctor: a.staff?.user?.name ? `Dr. ${a.staff.user.name}` : "Unknown",
             date,
             time,
-            type: a.appointment_type,
+            type: a.appointment_type || "N/A",
             status: a.status as Appointment["status"],
         };
     });
@@ -220,49 +229,74 @@ export async function fetchTodaysAppointments(): Promise<Appointment[]> {
         .lte("appointment_time", todayEnd.toISOString())
         .order("appointment_time", { ascending: true });
 
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 
     return (data as any[]).map((a) => {
         const { date, time } = splitDateTime(a.appointment_time);
         return {
-            id: `A${String(a.appointment_id).padStart(3, "0")}`,
+            id: a.appointment_id,
             patient: a.patient?.patient_name ?? "Unknown",
             doctor: a.staff?.user?.name ? `Dr. ${a.staff.user.name}` : "Unknown",
             date,
             time,
-            type: a.appointment_type,
+            type: a.appointment_type || "N/A",
             status: a.status as Appointment["status"],
         };
     });
 }
 
 export async function updateAppointmentStatus(
-    appointmentId: number,
+    appointmentId: string,
     status: Appointment["status"]
+,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("appointment")
         .update({ status })
         .eq("appointment_id", appointmentId);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 export async function createAppointment(
     patientId: string,
-    staffId: string,
+    userIdAsStaff: string,
     time: string,
-    type: string
+    type: string,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    // 1. Resolve actual staff_id from the `staff` table using the provided user_id
+    let { data: staffRec } = await supabase
+        .from("staff")
+        .select("staff_id")
+        .eq("user_id", userIdAsStaff)
+        .single();
+    
+    if (!staffRec) {
+        const { data: newStaff, error: insertStaffErr } = await supabase
+            .from("staff")
+            .insert({ user_id: userIdAsStaff })
+            .select("staff_id")
+            .single();
+        if (insertStaffErr) throw new Error("Failed to resolve staff profile: " + insertStaffErr.message);
+        staffRec = newStaff;
+    }
+
     const { error } = await supabase
         .from("appointment")
         .insert({
             patient_id: patientId,
-            staff_id: staffId,
+            staff_id: staffRec.staff_id,
             appointment_time: time,
             appointment_type: type,
             status: "pending",
         });
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 // ─── Prescriptions ─────────────────────────────────────────────────────────────
@@ -276,12 +310,16 @@ export async function fetchPrescriptions(): Promise<Prescription[]> {
       dosage,
       status,
       prescribed_at,
+      Dosage_end_Date,
       patient:patient_id ( patient_name ),
       staff:staff_id ( user:user_id ( name ) )
     `)
         .order("prescribed_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+        console.error("[PRESCRIPTION FETCH] Error:", JSON.stringify(error));
+        throw new Error(error.message || JSON.stringify(error));
+    }
 
     return (data as any[]).map((rx) => ({
         id: `RX${String(rx.prescription_id).padStart(3, "0")}`,
@@ -289,38 +327,85 @@ export async function fetchPrescriptions(): Promise<Prescription[]> {
         doctor: rx.staff?.user?.name ? `Dr. ${rx.staff.user.name}` : "Unknown",
         medication: rx.medication_name,
         dosage: rx.dosage,
-        date: rx.prescribed_at,
-        status: rx.status as Prescription["status"],
+        date: rx.prescribed_at ?? "",
+        dosageEndDate: rx.Dosage_end_Date ?? null,
+        status: rx.status,
     }));
 }
 
 export async function updatePrescriptionStatus(
     prescriptionId: number,
-    status: Prescription["status"]
+    status: string,
+    actorId: string,
+    dosageEndDate?: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    
+    const payload: any = { status };
+    if (dosageEndDate !== undefined) payload.Dosage_end_Date = dosageEndDate || null;
+
     const { error } = await supabase
         .from("prescription")
-        .update({ status })
+        .update(payload)
         .eq("prescription_id", prescriptionId);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
+
 export async function createPrescription(
-    patientId: string,
-    staffId: string,
+    patientId: string, // This is patient.patient_id from the UI
+    userIdAsStaff: string, // The UI passes user.user_id as staffId
     medicationName: string,
-    dosage: string
+    dosage: string,
+    actorId: string,
+    dosageEndDate?: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    // 1. Resolve actual staff_id from the `staff` table using the provided user_id
+    let { data: staffRec } = await supabase
+        .from("staff")
+        .select("staff_id")
+        .eq("user_id", userIdAsStaff)
+        .single();
+    
+    // Auto-create staff profile if missing to prevent FK violations
+    if (!staffRec) {
+        const { data: newStaff, error: insertStaffErr } = await supabase
+            .from("staff")
+            .insert({ user_id: userIdAsStaff })
+            .select("staff_id")
+            .single();
+        if (insertStaffErr) throw new Error("Failed to resolve staff profile: " + insertStaffErr.message);
+        staffRec = newStaff;
+    }
+
     const { error } = await supabase
         .from("prescription")
         .insert({
             patient_id: patientId,
-            staff_id: staffId,
+            staff_id: staffRec.staff_id,
             medication_name: medicationName,
-            dosage,
+            dosage: dosage,
             status: "active",
+            Dosage_end_Date: dosageEndDate || null,
         });
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
+}
+
+export async function deletePrescription(
+    prescriptionId: number,
+    actorId: string
+): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    const { error } = await supabase
+        .from("prescription")
+        .delete()
+        .eq("prescription_id", prescriptionId);
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 // ─── Roles ─────────────────────────────────────────────────────────────────────
@@ -331,7 +416,7 @@ export async function fetchRoles(): Promise<Role[]> {
         .select("role_id, role_name, color, permissions")
         .order("role_id");
 
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 
     // Count members per role from the `user` table
     const { data: userCounts } = await supabase
@@ -355,23 +440,31 @@ export async function fetchRoles(): Promise<Role[]> {
 export async function updateRole(
     roleId: string,
     updates: { role_name?: string; color?: string; permissions?: string[] }
+,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("role")
-        .update(updates)
+        .update({ ...updates, actor_id: actorId })
         .eq("role_id", roleId);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 export async function createRole(
     name: string,
     color: string,
     permissions: string[]
+,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("role")
-        .insert({ role_name: name, color, permissions });
-    if (error) throw error;
+        .insert({ role_name: name, color, permissions, actor_id: actorId });
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
 // ─── Password Management ──────────────────────────────────────────────────────
@@ -379,14 +472,246 @@ export async function createRole(
 export async function changeUserPassword(
     userId: string,
     newPassword: string
+,
+    actorId: string
 ): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
     if (!newPassword || newPassword.length < 6) {
         throw new Error("Password must be at least 6 characters.");
     }
     const passwordHash = await bcrypt.hash(newPassword, 10);
     const { error } = await supabase
         .from("user")
-        .update({ password_hash: passwordHash })
+        .update({ password_hash: passwordHash, actor_id: actorId })
         .eq("user_id", userId);
-    if (error) throw error;
+    if (error) throw new Error(error.message || JSON.stringify(error));
 }
+
+// ─── Inventory ────────────────────────────────────────────────────────────────
+
+export type InventoryItem = {
+    inventory_id: number;
+    quantity_available: number;
+    reorder_level: number;
+    medicine: {
+        medicine_id: number;
+        medicine_name: string;
+        category: string | null;
+        manufacturer: string | null;
+        expiry_date: string | null;
+    };
+};
+
+export async function fetchInventory(): Promise<InventoryItem[]> {
+    const { data, error } = await supabase
+        .from("inventory")
+        .select(`
+            inventory_id, quantity_available, reorder_level,
+            medicine:medicine_id ( medicine_id, medicine_name, category, manufacturer, expiry_date )
+        `)
+        .order("inventory_id", { ascending: true });
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    return (data as any[]) ?? [];
+}
+
+export async function addInventoryItem(
+    medicine_name: string,
+    category: string | null,
+    manufacturer: string | null,
+    expiry_date: string | null,
+    quantity_available: number,
+    reorder_level: number
+,
+    actorId: string
+): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    const { data: med, error: me } = await supabase
+        .from("medicine")
+        .insert({ medicine_name, category, manufacturer, expiry_date, actor_id: actorId })
+        .select("medicine_id, medicine_name, category, manufacturer")
+        .single();
+    if (me) throw me;
+
+    const { data: inv, error: ie } = await supabase
+        .from("inventory")
+        .insert({ medicine_id: med.medicine_id, quantity_available, reorder_level, actor_id: actorId })
+        .select()
+        .single();
+    if (ie) throw ie;
+
+    await logAudit({
+        action: "create", actor_id: actorId, actor_role: (session.user as any).role || "unknown",
+        entity_type: "inventory", entity_id: String(inv.inventory_id),
+        after_data: { medicine: med, inventory: inv }
+    });
+}
+
+export type MedicineLookup = {
+    medicine_id: number;
+    medicine_name: string;
+    category: string | null;
+    manufacturer: string | null;
+    expiry_date: string | null;
+};
+
+export async function fetchMedicines(): Promise<MedicineLookup[]> {
+    const { data, error } = await supabase
+        .from("medicine")
+        .select("medicine_id, medicine_name, category, manufacturer, expiry_date")
+        .order("medicine_name", { ascending: true });
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    return (data as MedicineLookup[]) ?? [];
+}
+
+export async function upsertInventoryItem(
+    medicine_id: number,
+    quantity_to_add: number,
+    reorder_level: number
+,
+    actorId: string
+): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    const { data: existing } = await supabase
+        .from("inventory")
+        .select("inventory_id, quantity_available")
+        .eq("medicine_id", medicine_id)
+        .maybeSingle();
+
+    if (existing) {
+        const afterQty = existing.quantity_available + quantity_to_add;
+        const { error } = await supabase
+            .from("inventory")
+            .update({ quantity_available: afterQty, actor_id: actorId })
+            .eq("inventory_id", existing.inventory_id);
+        if (error) throw new Error(error.message || JSON.stringify(error));
+        await logAudit({
+            action: "update", actor_id: actorId, actor_role: (session.user as any).role || "unknown",
+            entity_type: "inventory", entity_id: String(existing.inventory_id),
+            before_data: { quantity_available: existing.quantity_available },
+            after_data: { quantity_available: afterQty }
+        });
+    } else {
+        const { data: inv, error } = await supabase
+            .from("inventory")
+            .insert({ medicine_id, quantity_available: quantity_to_add, reorder_level, actor_id: actorId })
+            .select()
+            .single();
+        if (error) throw new Error(error.message || JSON.stringify(error));
+        await logAudit({
+            action: "create", actor_id: actorId, actor_role: (session.user as any).role || "unknown",
+            entity_type: "inventory", entity_id: String(inv.inventory_id),
+            after_data: inv
+        });
+    }
+}
+
+export async function updateInventoryQty(
+    inventoryId: number,
+    quantity_available: number
+,
+    actorId: string
+): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    const { data: existing } = await supabase.from("inventory").select("quantity_available").eq("inventory_id", inventoryId).single();
+    if (!existing) return;
+    const { error } = await supabase
+        .from("inventory")
+        .update({ quantity_available, actor_id: actorId })
+        .eq("inventory_id", inventoryId);
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    await logAudit({
+        action: "update", actor_id: actorId, actor_role: (session.user as any).role || "unknown",
+        entity_type: "inventory", entity_id: String(inventoryId),
+        before_data: existing, after_data: { quantity_available }
+    });
+}
+
+export async function removeInventoryItem(
+    inventoryId: number,
+    medicineId: number
+,
+    actorId: string
+): Promise<void> {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+    const { data: existingMed } = await supabase.from("medicine").select("*").eq("medicine_id", medicineId).single();
+
+    const { error: ie } = await supabase
+        .from("inventory")
+        .delete({ actor_id: actorId } as any)
+        .eq("inventory_id", inventoryId);
+    if (ie) throw ie;
+    const { error: me } = await supabase
+        .from("medicine")
+        .delete({ actor_id: actorId } as any)
+        .eq("medicine_id", medicineId);
+    if (me) throw me;
+
+    await logAudit({
+        action: "delete", actor_id: actorId, actor_role: (session.user as any).role || "unknown",
+        entity_type: "inventory", entity_id: String(inventoryId),
+        before_data: { medicine: existingMed }
+    });
+}
+
+// ─── Audit Logs ───────────────────────────────────────────────────────────────
+
+export type AuditEntry = {
+    id: string;
+    source: "audit_log" | "role_audit";
+    user_id: string | null;
+    actor: string;
+    actor_role?: string;
+    action: string;
+    entity: string;
+    entity_id?: string;
+    before_data?: any;
+    after_data?: any;
+    timestamp: string;
+};
+
+export async function fetchAuditLogs(): Promise<AuditEntry[]> {
+    // Fetch audit_log rows (join user name)
+    const { data: logs } = await supabase
+        .from("audit_log")
+        .select("log_id, user_id, action, table_affected, timestamp, user:user_id ( name )")
+        .order("timestamp", { ascending: false })
+        .limit(200);
+
+    // Fetch role_audit rows (join user + role names)
+    const { data: roleAudits } = await supabase
+        .from("role_audit")
+        .select("id, user_id, changed_by, role_id, action, created_at, user:user_id ( name ), role:role_id ( role_name )")
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+    const normalized: AuditEntry[] = [
+        ...((logs ?? []) as any[]).map((r: any) => ({
+            id: `al-${r.log_id}`,
+            source: "audit_log" as const,
+            user_id: r.user_id ?? null,
+            actor: r.user?.name ?? r.user_id ?? "System",
+            action: r.action ?? "—",
+            entity: r.table_affected ?? "—",
+            timestamp: r.timestamp,
+        })),
+        ...((roleAudits ?? []) as any[]).map((r: any) => ({
+            id: `ra-${r.id}`,
+            source: "role_audit" as const,
+            user_id: r.user_id ?? null,
+            actor: r.user?.name ?? r.changed_by ?? "System",
+            action: r.action ?? "—",
+            entity: r.role?.role_name ? `role: ${r.role.role_name}` : "role",
+            timestamp: r.created_at,
+        })),
+    ];
+
+    // Sort combined list newest-first
+    normalized.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return normalized;
+}
+

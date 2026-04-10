@@ -26,7 +26,7 @@ export async function getUserRoles(userId: string): Promise<RbacRole[]> {
     .select("role:role_id(role_id, role_name, priority)")
     .eq("user_id", userId);
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || JSON.stringify(error));
 
   return (data as any[])
     .map((d) => d.role as RbacRole)
@@ -47,7 +47,7 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
     `)
     .eq("user_id", userId);
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || JSON.stringify(error));
 
   const perms = new Set<string>();
   for (const ur of data as any[]) {
@@ -88,7 +88,7 @@ export async function getAllPermissions(): Promise<RbacPermission[]> {
     .select("permission_id, name, description")
     .order("name");
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || JSON.stringify(error));
   return data as RbacPermission[];
 }
 

@@ -68,6 +68,39 @@ The app is structured to serve three distinct user roles:
 - Standard Next.js scripts: `npm run dev`, `npm run build`, `npm run start`.
 - Demo staff account: `staff@demo.com` / `staffPassword123`.
 
+## File Structure & Functionality Mapping
+
+This section outlines the primary files in the repository and their core functionalities.
+
+### Core Configuration & Setup
+- `auth.ts` (Root) — NextAuth configuration, credential providers, and session callbacks.
+- `src/middleware.ts` — Middleware for role-based route protection, dynamically checking user roles and intercepting unauthorized dashboard access.
+- `src/lib/supabase.ts` — Initialization of the generic Supabase client.
+- `src/app/globals.css` — Global CSS variables, custom Tailwind rules, and app-wide base styles.
+
+### Application Pages & Routing (`src/app/`)
+- `src/app/page.tsx` — Public landing page and root index.
+- `src/app/layout.tsx` — Main root layout, encompassing global providers and standard HTML structure.
+- `src/app/admin/page.tsx` — Comprehensive Admin Dashboard UI, incorporating panels for staff, patients, inventory, analytics, etc.
+- `src/app/admin/access-role/page.tsx` — The Discord-style RBAC UI managing system permissions, role attributes, and user-role relations.
+- `src/app/staff/page.tsx` — The Staff Dashboard UI focusing on patient appointments, schedules, and a specialized dark-mode toggle.
+- `src/app/patient/page.tsx` — The Patient Portal landing page offering patient-centric views and functionality.
+
+### Custom Hooks (`src/hooks/`)
+- `src/hooks/adminQueries.ts` — Direct Supabase database wrapper methods to perform CRUD operations on admin-related data.
+- `src/hooks/useAdminData.ts` — React hook facilitating local state management, async data fetching workflows, and orchestrating calls to `adminQueries.ts`.
+- `src/hooks/useTheme.ts` — Lightweight custom hook for managing persistent dark mode layout toggles.
+
+### Shared Components (`src/components/`)
+- `src/components/LoginForm.tsx` — Interface for logging existing users in via Credentials or external providers.
+- `src/components/SignupForm.tsx` — Interface for registering new users into the system.
+- `src/components/AuthForm.tsx` — Composite wrapper/layout handling multiple authentication methods.
+- `src/components/GoogleButton.tsx` — Specific OAuth connection button configuration UI.
+
+### Internal APIs & Library Logic
+- `src/lib/rbac/index.ts` — RBAC authorization library functions to compute active user permissions.
+- `src/app/api/admin/roles/...` — Complete set of discrete endpoints to connect the RBAC UI to Supabase executions.
+
 ## Active Files & Recent Development Focus
 - **Current Active Files:**
   - `Context Report.md`

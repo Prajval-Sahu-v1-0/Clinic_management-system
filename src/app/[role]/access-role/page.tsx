@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useTheme } from "@/hooks/useTheme";
+import { getPermissions } from "@/components/DashboardShared";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,12 +24,39 @@ const initials = (n: string) => n.split(" ").map(w => w[0]).slice(0, 2).join("")
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const SS_KEY = "ar_pending_edits";
+
+interface PendingEdits {
+  roleId: string;
+  name?: string;
+  priority?: number;
+  addPerms: string[];
+  removePerms: string[];
+}
+
+function readPending(): PendingEdits | null {
+  try { const v = sessionStorage.getItem(SS_KEY); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+function writePending(p: PendingEdits) {
+  try { sessionStorage.setItem(SS_KEY, JSON.stringify(p)); } catch {}
+}
+function clearPending() {
+  try { sessionStorage.removeItem(SS_KEY); } catch {}
+}
+
 function groupPerms(perms: Permission[]) {
   const groups: Record<string, Permission[]> = {};
   for (const p of perms) {
-    const parts = p.name.split(" ");
-    const cat = parts.length > 1 ? parts.slice(1).join(" ") : "General";
-    (groups[cat] ??= []).push(p);
+    // Permission names are like "view_audit_logs", convert to "View Audit Logs" format for categorization
+    const formattedName = p.name.replace(/_/g, " ");
+    const parts = formattedName.split(" ");
+    const cat = parts.length > 1
+      ? parts.slice(1).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+      : "General";
+    
+    // Add a formatted name to property for rendering
+    const displayPerm = { ...p, displayName: parts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") };
+    (groups[cat] ??= []).push(displayPerm as any);
   }
   return groups;
 }
@@ -73,12 +101,17 @@ function Toggle({ on, color, onClick }: { on: boolean; color: string; onClick: (
 export default function AccessRolePage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
+  const params = useParams();
+  const currentRole = (params?.role as string) ?? "admin";
   const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (sessionStatus === "unauthenticated") router.push("/");
-    if (sessionStatus === "authenticated" && session?.user?.role !== "admin") router.push("/");
-  }, [sessionStatus, session, router]);
+    if (sessionStatus === "authenticated") {
+      const perms = getPermissions(session);
+      if (!perms.includes("manage_roles")) router.push(`/${currentRole}`);
+    }
+  }, [sessionStatus, session, router, currentRole]);
 
   const [tab, setTab] = useState<"roles" | "members">("roles");
   const [roles, setRoles] = useState<Role[]>([]);
@@ -94,6 +127,7 @@ export default function AccessRolePage() {
   const [manageId, setManageId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const [pendingPerms, setPendingPerms] = useState<{ add: string[]; remove: string[] }>({ add: [], remove: [] });
 
   const fetchData = useCallback(async () => {
     try {
@@ -111,10 +145,38 @@ export default function AccessRolePage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // ── Hydrate from sessionStorage on mount ──
+  useEffect(() => {
+    const p = readPending();
+    if (p) {
+      setSelRoleId(p.roleId);
+      if (p.name != null) setEditName(p.name);
+      if (p.priority != null) setEditPri(p.priority);
+      setPendingPerms({ add: p.addPerms, remove: p.removePerms });
+    }
+  }, []);
+
   const selRole = roles.find(r => r.role_id === selRoleId) ?? roles[0] ?? null;
   useEffect(() => {
-    if (selRole) { setEditName(selRole.role_name); setEditPri(selRole.priority); }
+    if (selRole) {
+      const p = readPending();
+      if (p && p.roleId === selRole.role_id) {
+        if (p.name != null) setEditName(p.name); else setEditName(selRole.role_name);
+        if (p.priority != null) setEditPri(p.priority); else setEditPri(selRole.priority);
+        setPendingPerms({ add: p.addPerms, remove: p.removePerms });
+      } else {
+        setEditName(selRole.role_name);
+        setEditPri(selRole.priority);
+        setPendingPerms({ add: [], remove: [] });
+      }
+    }
   }, [selRole?.role_id]);
+
+  // ── Persist edits to sessionStorage on change ──
+  useEffect(() => {
+    if (!selRole) return;
+    writePending({ roleId: selRole.role_id, name: editName, priority: editPri, addPerms: pendingPerms.add, removePerms: pendingPerms.remove });
+  }, [selRole?.role_id, editName, editPri, pendingPerms]);
 
   const api = async (url: string, body?: any, method = "POST") => {
     setSaving(true);
@@ -128,12 +190,53 @@ export default function AccessRolePage() {
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
   };
 
-  const saveName = () => selRole && api("/api/admin/roles", { role_id: selRole.role_id, role_name: editName }, "PATCH");
-  const savePri = () => selRole && api("/api/admin/roles/priority", { role_id: selRole.role_id, priority: editPri });
+  // ── Buffer permission toggles locally ──
   const togglePerm = (pid: string) => {
     if (!selRole) return;
-    const has = selRole.permissions.some(p => p.permission_id === pid);
-    api("/api/admin/roles/permissions", { role_id: selRole.role_id, permission_id: pid, action: has ? "remove" : "add" });
+    const currentlyOn = selRole.permissions.some(p => p.permission_id === pid);
+    // account for pending overrides
+    const effectiveOn = pendingPerms.add.includes(pid) ? true : pendingPerms.remove.includes(pid) ? false : currentlyOn;
+    setPendingPerms(prev => {
+      const add = prev.add.filter(id => id !== pid);
+      const remove = prev.remove.filter(id => id !== pid);
+      if (effectiveOn) {
+        // turning off: if it was originally on, mark for removal; if it was a pending add, just drop it
+        if (currentlyOn) remove.push(pid);
+      } else {
+        // turning on: if it was originally off, mark for add; if it was a pending remove, just drop it
+        if (!currentlyOn) add.push(pid);
+      }
+      return { add, remove };
+    });
+  };
+
+  // ── Save handler: batch-send all changes to backend ──
+  const saveAll = async () => {
+    if (!selRole) return;
+    setSaving(true);
+    try {
+      const promises: Promise<any>[] = [];
+      // name
+      if (editName !== selRole.role_name) {
+        promises.push(fetch("/api/admin/roles", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role_id: selRole.role_id, role_name: editName }) }).then(r => { if (!r.ok) throw new Error("Failed to save name"); }));
+      }
+      // priority
+      if (editPri !== selRole.priority) {
+        promises.push(fetch("/api/admin/roles/priority", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role_id: selRole.role_id, priority: editPri }) }).then(r => { if (!r.ok) throw new Error("Failed to save priority"); }));
+      }
+      // permissions
+      for (const pid of pendingPerms.add) {
+        promises.push(fetch("/api/admin/roles/permissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role_id: selRole.role_id, permission_id: pid, action: "add" }) }).then(r => { if (!r.ok) throw new Error("Failed to add permission"); }));
+      }
+      for (const pid of pendingPerms.remove) {
+        promises.push(fetch("/api/admin/roles/permissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role_id: selRole.role_id, permission_id: pid, action: "remove" }) }).then(r => { if (!r.ok) throw new Error("Failed to remove permission"); }));
+      }
+      await Promise.all(promises);
+      clearPending();
+      setPendingPerms({ add: [], remove: [] });
+      await fetchData();
+      setError(null);
+    } catch (e: any) { setError(e.message); } finally { setSaving(false); }
   };
   const createRole = () => {
     if (!newName.trim()) return;
@@ -300,8 +403,8 @@ export default function AccessRolePage() {
         {/* ═══ Header ═══ */}
         <header style={{ height: 60, padding: "0 28px", background: isDark ? "#1e293b" : "#fff", borderBottom: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, transition: "background 0.2s" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <a href="/admin" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, fontWeight: 600 }}>
-              <i className="fa-solid fa-arrow-left" style={{ fontSize: 11 }} /> Admin
+            <a href={`/${currentRole}`} style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, fontWeight: 600 }}>
+              <i className="fa-solid fa-arrow-left" style={{ fontSize: 11 }} /> {currentRole.charAt(0).toUpperCase() + currentRole.slice(1)}
             </a>
             <span style={{ color: isDark ? "#475569" : "#d1d5db" }}>/</span>
             <h1 style={{ fontSize: 17, fontWeight: 700, fontFamily: "'Outfit',sans-serif", color: isDark ? "#e2e8f0" : "#111827" }}>Access &amp; Roles</h1>
@@ -397,7 +500,7 @@ export default function AccessRolePage() {
                     <label style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>Priority</label>
                     <input type="number" value={editPri} onChange={e => setEditPri(Number(e.target.value))}
                       style={{ width: 56, border: "1px solid #e5e7eb", borderRadius: 7, padding: "5px 8px", fontSize: 13, textAlign: "center", outline: "none", fontFamily: "inherit" }} />
-                    <Btn variant="primary" onClick={() => { saveName(); savePri(); }} disabled={saving}>
+                    <Btn variant="primary" onClick={saveAll} disabled={saving}>
                       {saving ? <><i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 11 }} /> Saving</> : <><i className="fa-solid fa-floppy-disk" style={{ fontSize: 11 }} /> Save</>}
                     </Btn>
                   </div>
@@ -415,7 +518,8 @@ export default function AccessRolePage() {
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {perms.map(p => {
-                          const on = selRole.permissions.some(rp => rp.permission_id === p.permission_id);
+                          const baseOn = selRole.permissions.some(rp => rp.permission_id === p.permission_id);
+                          const on = pendingPerms.add.includes(p.permission_id) ? true : pendingPerms.remove.includes(p.permission_id) ? false : baseOn;
                           return (
                             <div key={p.permission_id} onClick={() => togglePerm(p.permission_id)} style={{
                               display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px",
@@ -425,7 +529,7 @@ export default function AccessRolePage() {
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                 <i className={on ? "fa-solid fa-circle-check" : "fa-regular fa-circle"} style={{ color: on ? color : "#d1d5db", fontSize: 15 }} />
                                 <div>
-                                  <span style={{ fontSize: 13, fontWeight: 500, color: on ? "#111827" : "#6b7280" }}>{p.name}</span>
+                                  <span style={{ fontSize: 13, fontWeight: 500, color: on ? "#111827" : "#6b7280" }}>{(p as any).displayName || p.name}</span>
                                   {p.description && <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>{p.description}</div>}
                                 </div>
                               </div>
