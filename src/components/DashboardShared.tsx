@@ -391,8 +391,25 @@ export function DashboardLayout({
           )}
 
           {/* User card */}
-          <div style={{ margin: "0 8px", padding: "12px", background: isDark ? "#162032" : "#f9fafb", borderRadius: 10, display: "flex", alignItems: "center", gap: 10, border: `1px solid ${isDark ? "#334155" : "#f3f4f6"}` }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: meta.avatarGradient, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{userInitials}</div>
+          <div 
+            onClick={() => onSectionChange("profile")}
+            style={{ margin: "0 8px", padding: "12px", background: isDark ? "#162032" : "#f9fafb", cursor: "pointer", borderRadius: 10, display: "flex", alignItems: "center", gap: 10, border: `1px solid ${isDark ? "#334155" : "#f3f4f6"}`, transition: "background 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = isDark ? "#1e293b" : "#f3f4f6")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = isDark ? "#162032" : "#f9fafb")}
+            title="Open Profile Settings"
+          >
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: meta.avatarGradient, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, position: "relative", overflow: "hidden" }}>
+              <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 0 }}>{userInitials}</span>
+              {session?.user?.id && (
+                <img
+                  src={`https://dirqlpmlgorxxqqzqvls.supabase.co/storage/v1/object/public/avatars/${session.user.id}.jpg`}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, zIndex: 1, display: "none" }}
+                  onLoad={(e) => { e.currentTarget.style.display = "block"; }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              )}
+            </div>
             <div style={{ flex: 1, overflow: "hidden" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: isDark ? "#e2e8f0" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userName}</div>
               <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "capitalize" }}>{currentRole}</div>
@@ -401,7 +418,10 @@ export function DashboardLayout({
               className="fa-solid fa-right-from-bracket"
               style={{ color: isDark ? "#475569" : "#d1d5db", fontSize: 14, cursor: "pointer", transition: "color 0.15s" }}
               title="Sign Out"
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={(e) => {
+                e.stopPropagation();
+                signOut({ callbackUrl: "/" });
+              }}
               onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = "#dc2626"}
               onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = isDark ? "#475569" : "#d1d5db"}
             />

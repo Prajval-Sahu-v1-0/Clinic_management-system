@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { validateUser, getUser, registerUser } from "@/lib/mockDb";
 import { supabase } from "@/lib/supabase";
+import { logAudit } from "@/lib/audit";
 
 // ─── Inline RBAC helpers (avoid importing from "use server" module) ───────────
 
@@ -137,6 +138,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           (user as { role?: string }).role = existingUser.role;
         }
       }
+
+      // Log audit entry for every successful login
+      const userRole = (user as { role?: string }).role ?? "patient";
+      logAudit({
+        action: "login",
+        actor_id: user.id as string,
+        actor_role: userRole,
+        entity_type: "session",
+        entity_id: user.email ?? user.id as string,
+        after_data: {
+          provider: account?.provider ?? "credentials",
+          name: user.name,
+          email: user.email,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
       return true;
     },
   },

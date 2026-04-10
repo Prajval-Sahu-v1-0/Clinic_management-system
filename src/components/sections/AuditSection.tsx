@@ -168,7 +168,7 @@ export default function AuditSection() {
                         </div>
                       </td>
                       <td style={{ padding: "13px 18px" }}>
-                        <span style={{ background: bg, color, borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, textTransform: "capitalize", letterSpacing: "0.02em", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ background: bg, color, borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", display: "inline-flex", alignItems: "center", gap: 5 }}>
                           <span style={{ width: 5, height: 5, borderRadius: "50%", background: color, display: "inline-block" }} />
                           {entry.action}
                         </span>

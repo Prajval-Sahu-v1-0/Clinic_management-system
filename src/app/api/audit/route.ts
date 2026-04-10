@@ -23,7 +23,16 @@ export async function GET(req: Request) {
     .order("timestamp", { ascending: false });
 
   if (actionFilter && actionFilter !== "all") {
-    query = query.eq("action", actionFilter);
+    // Map common frontend action terms to database counterparts if needed
+    if (actionFilter.toLowerCase() === "create") {
+      query = query.in("action", ["create", "CREATE", "insert", "INSERT"]);
+    } else if (actionFilter.toLowerCase() === "update") {
+      query = query.in("action", ["update", "UPDATE"]);
+    } else if (actionFilter.toLowerCase() === "delete") {
+      query = query.in("action", ["delete", "DELETE"]);
+    } else {
+      query = query.ilike("action", actionFilter);
+    }
   }
   if (entityTypeFilter && entityTypeFilter !== "all") {
     query = query.eq("entity_type", entityTypeFilter);

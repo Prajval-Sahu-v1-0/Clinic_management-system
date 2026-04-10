@@ -72,14 +72,20 @@ export default function DashboardOverview({
     );
   }
 
-  // Build quick actions
+  // Build quick actions — only show actions the user has permission for
   const quickActions: { label: string; icon: string; section: string }[] = [];
-  if (hasPerm("view_patients")) quickActions.push({ label: currentRole === "patient" ? "My Profile" : "View Patients", icon: "fa-solid fa-user-injured", section: currentRole === "patient" ? "profile" : "patients" });
-  if (hasPerm("view_appointments")) quickActions.push({ label: currentRole === "patient" ? "View Appointments" : "Appointments", icon: "fa-solid fa-calendar-days", section: "appointments" });
+
+  if (hasPerm("view_patients"))       quickActions.push({ label: currentRole === "patient" ? "My Profile" : "View Patients", icon: "fa-solid fa-user-injured", section: currentRole === "patient" ? "profile" : "patients" });
+  if (hasPerm("manage_staff"))        quickActions.push({ label: "Staff & Users", icon: "fa-solid fa-user-nurse", section: "staff" });
+  if (hasPerm("view_appointments"))   quickActions.push({ label: currentRole === "patient" ? "View Appointments" : "Appointments", icon: "fa-solid fa-calendar-days", section: "appointments" });
   if (hasPerm("create_appointments")) quickActions.push({ label: "New Appointment", icon: "fa-solid fa-calendar-plus", section: "appointments" });
-  if (hasPerm("view_prescriptions")) quickActions.push({ label: currentRole === "patient" ? "View Prescriptions" : "Prescriptions", icon: "fa-solid fa-file-prescription", section: "prescriptions" });
-  if (hasPerm("write_prescriptions")) quickActions.push({ label: "Write Prescription", icon: "fa-solid fa-file-prescription", section: "prescriptions" });
-  if (hasPerm("manage_roles")) quickActions.push({ label: "Manage Roles", icon: "fa-solid fa-key", section: "access" });
+  if (hasPerm("view_prescriptions"))  quickActions.push({ label: currentRole === "patient" ? "View Prescriptions" : "Prescriptions", icon: "fa-solid fa-file-prescription", section: "prescriptions" });
+  if (hasPerm("write_prescriptions")) quickActions.push({ label: "Write Prescription", icon: "fa-solid fa-prescription", section: "prescriptions" });
+  if (hasPerm("manage_inventory"))    quickActions.push({ label: "Inventory", icon: "fa-solid fa-boxes-stacked", section: "inventory" });
+  if (hasPerm("manage_roles"))        quickActions.push({ label: "Manage Roles", icon: "fa-solid fa-shield-halved", section: "access" });
+  if (hasPerm("view_audit_logs"))     quickActions.push({ label: "Audit Logs", icon: "fa-solid fa-clock-rotate-left", section: "audit" });
+
+  // Fallback — always show at least profile
   if (quickActions.length === 0) {
     quickActions.push({ label: "My Profile", icon: "fa-solid fa-user", section: "profile" });
   }
