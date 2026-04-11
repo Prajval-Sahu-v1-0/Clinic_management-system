@@ -220,7 +220,7 @@ export async function deleteUserRecord(userId: string): Promise<void> {
         .eq("user_id", userId)
         .single();
         
-    if (userRec?.role?.role_name?.toLowerCase() === "permanent") {
+    if ((userRec as any)?.role?.role_name?.toLowerCase() === "permanent") {
         throw new Error("Cannot delete user: This user has the 'permanent' system role.");
     }
 

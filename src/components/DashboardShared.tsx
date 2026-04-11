@@ -636,10 +636,10 @@ export function DashboardLayout({
                       borderRadius: showConnector ? "10px 0 0 10px" : 10,
                       width: showConnector ? "calc(100% + 10px)" : "auto",
                       background: isActive ? (isDark ? "#2a2a2a" : "#ffffff") : "transparent",
-                      border: isActive
-                        ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}`
-                        : "1px solid transparent",
-                      borderRight: showConnector ? "none" : undefined,
+                      borderTop: isActive ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}` : "1px solid transparent",
+                      borderBottom: isActive ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}` : "1px solid transparent",
+                      borderLeft: isActive ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}` : "1px solid transparent",
+                      borderRight: showConnector ? "none" : (isActive ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}` : "1px solid transparent"),
                       color: isActive ? C.text1 : C.text3,
                       fontSize: 13, fontWeight: isActive ? 600 : 500,
                       cursor: "pointer", textAlign: "left",

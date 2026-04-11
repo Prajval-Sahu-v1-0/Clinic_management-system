@@ -82,19 +82,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: string }).role ?? "patient";
+        // Find existing DB user just to be fully certain of the local UUID
+        // because Google OAuth provides its own external numerical ID on the user obj
+        let dbUserId = user.id;
+        let dbUserRole = (user as { role?: string }).role ?? "patient";
+        
+        if (user.email) {
+          const dbUser = await getUser(user.email);
+          if (dbUser) {
+            dbUserId = dbUser.id;
+            dbUserRole = dbUser.role;
+          }
+        }
+
+        token.id = dbUserId;
+        token.role = dbUserRole;
         token.name = user.name ?? "";
         token.email = user.email ?? "";
-        // Fetch roles and permissions directly from Supabase
+
+        // Fetch roles and permissions directly from Supabase using the local UUID
         try {
-          const roles = await fetchUserRoles(user.id as string);
+          const roles = await fetchUserRoles(dbUserId as string);
           token.roles = roles.length > 0 ? roles : [token.role as string];
 
-          const rawPerms = await fetchUserPermissions(user.id as string);
-          // DB stores "View Patients" — normalize to "view_patients"
+          const rawPerms = await fetchUserPermissions(dbUserId as string);
           token.permissions = rawPerms.map((p) =>
             p.toLowerCase().replace(/\s+/g, "_")
           );
@@ -104,6 +117,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.permissions = [];
         }
       }
+
+      // If session update is triggered from the client, re-fetch roles & permissions
+      if (trigger === "update" && token.id) {
+         try {
+           const roles = await fetchUserRoles(token.id as string);
+           if (roles.length > 0) token.roles = roles;
+
+           const rawPerms = await fetchUserPermissions(token.id as string);
+           token.permissions = rawPerms.map((p) =>
+             p.toLowerCase().replace(/\s+/g, "_")
+           );
+         } catch (err) {
+           console.error("[AUTH] Failed to refresh roles/permissions:", err);
+         }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -132,9 +161,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             "google"
           );
           if (newUser) {
+            user.id = newUser.id;
             (user as { role?: string }).role = newUser.role;
           }
         } else {
+          user.id = existingUser.id;
           (user as { role?: string }).role = existingUser.role;
         }
       }

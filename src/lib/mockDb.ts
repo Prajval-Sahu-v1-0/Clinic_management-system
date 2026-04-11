@@ -65,6 +65,14 @@ export async function registerUser(
     return null;
   }
 
+  // Insert into user_roles to link user to the role
+  if (roleId) {
+    await supabase.from("user_roles").insert({
+      user_id: data.user_id,
+      role_id: roleId,
+    });
+  }
+
   // Auto-create patient profile
   await supabase.from("patient").insert({
     user_id: data.user_id,

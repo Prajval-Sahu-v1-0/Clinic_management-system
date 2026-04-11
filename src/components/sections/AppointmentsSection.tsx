@@ -51,7 +51,7 @@ export default function AppointmentsSection({ permissions }: { permissions: stri
   const typeBuffer = useRef("");
   const typeTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, list: string[], ref: React.RefObject<HTMLDivElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, list: string[], ref: React.RefObject<HTMLDivElement | null>) => {
     if (e.key === "ArrowUp") {
       e.preventDefault();
       if (ref.current) ref.current.scrollBy({ top: -22, behavior: "smooth" });
