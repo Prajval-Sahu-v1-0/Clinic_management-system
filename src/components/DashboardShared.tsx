@@ -310,7 +310,6 @@ export function DashboardLayout({
   const C = {
     pageBg: "var(--theme-page-bg)",
     sidebarBg: "var(--theme-sidebar-bg)",
-    sidebarBorder: "var(--theme-sidebar-border)",
     cardBg: "var(--theme-card-bg)",
     headerBg: "var(--theme-header-bg)",
     border: "var(--theme-border)",
