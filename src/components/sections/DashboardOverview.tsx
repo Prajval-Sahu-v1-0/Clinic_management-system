@@ -102,19 +102,19 @@ export default function DashboardOverview({
       {/* Greeting */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: "#111111", margin: 0, fontFamily: "'Inter', sans-serif", letterSpacing: "-0.3px" }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#EDE3D1", margin: 0, fontFamily: "'Inter', sans-serif", letterSpacing: "-0.3px" }}>
             {greeting}
           </h2>
-          <p style={{ color: "#888888", margin: "4px 0 0", fontSize: 14 }}>{subtitle}</p>
+          <p style={{ color: "#A9D8C8", margin: "4px 0 0", fontSize: 14, opacity: 0.7 }}>{subtitle}</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f0f0f0", border: "1px solid #e0e0e0", borderRadius: 10, padding: "8px 14px" }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#1a1a1a", display: "inline-block" }} />
-          <span style={{ fontSize: 12, color: "#333333", fontWeight: 600 }}>{statusLabel}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(20,78,66,0.5)", border: "1px solid rgba(169,216,200,0.1)", borderRadius: 10, padding: "8px 14px" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#3A8F7A", display: "inline-block", boxShadow: "0 0 8px rgba(58,143,122,0.5)" }} />
+          <span style={{ fontSize: 12, color: "#A9D8C8", fontWeight: 600 }}>{statusLabel}</span>
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 16 }}>
         {statCards.map((s) => (
           <StatCard key={s.label} iconClass={s.iconClass} label={s.label} value={s.value} loading={s.loading} />
         ))}
@@ -122,32 +122,34 @@ export default function DashboardOverview({
 
       {/* Quick Actions */}
       <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#888888", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>Quick Actions</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--theme-text3)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>Quick Actions</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {quickActions.map((a) => (
             <button
               key={a.label}
               onClick={() => setSection(a.section)}
               style={{
-                background: "#fff", border: "1px solid #e8e8e8", borderRadius: 12,
-                padding: "12px 18px", color: "#333333", fontSize: 13,
+                background: "var(--theme-card-bg)", border: "1px solid var(--theme-border)", borderRadius: 12,
+                padding: "12px 18px", color: "var(--theme-text2)", fontSize: 13,
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
-                fontWeight: 600, fontFamily: "inherit", transition: "all 0.15s",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                fontWeight: 600, fontFamily: "inherit", transition: "all 0.2s",
+                boxShadow: "var(--theme-card-shadow)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#1a1a1a";
-                (e.currentTarget as HTMLButtonElement).style.color = "#111111";
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--sage)";
+                (e.currentTarget as HTMLButtonElement).style.color = "var(--theme-filter-active-color)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "var(--theme-card-shadow)";
+                (e.currentTarget as HTMLButtonElement).style.background = "var(--theme-filter-active-bg)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#e8e8e8";
-                (e.currentTarget as HTMLButtonElement).style.color = "#333333";
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.05)";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--theme-border)";
+                (e.currentTarget as HTMLButtonElement).style.color = "var(--theme-text2)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "var(--theme-card-shadow)";
+                (e.currentTarget as HTMLButtonElement).style.background = "var(--theme-card-bg)";
               }}
             >
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <i className={a.icon} style={{ fontSize: 12, color: "#fff" }} />
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(58,143,122,0.3)" }}>
+                <i className={a.icon} style={{ fontSize: 12, color: "#EDE3D1" }} />
               </div>
               {a.label}
             </button>
@@ -159,22 +161,24 @@ export default function DashboardOverview({
       {hasPerm("view_appointments") && (
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#888888", textTransform: "uppercase", letterSpacing: "0.1em" }}>{previewLabel}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--theme-text3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{previewLabel}</div>
             <button
               onClick={() => setSection("appointments")}
-              style={{ fontSize: 12, color: "#555555", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5 }}
+              style={{ fontSize: 12, color: "var(--copper)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5, transition: "color 0.15s" }}
+              onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = "var(--copper-light)"}
+              onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = "var(--copper)"}
             >
               View all <i className="fa-solid fa-arrow-right" style={{ fontSize: 10 }} />
             </button>
           </div>
-          <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <div style={{ background: "var(--theme-card-bg)", border: "1px solid var(--theme-border-soft)", borderRadius: 16, overflow: "hidden", boxShadow: "var(--theme-card-shadow)", backdropFilter: "blur(8px)" }}>
             {previewLoading ? (
-              <div style={{ padding: 24, color: "#888888", fontSize: 13, textAlign: "center" }}>
-                <i className="fa-solid fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Loading appointments…
+              <div style={{ padding: 24, color: "var(--theme-text2)", fontSize: 13, textAlign: "center" }}>
+                <i className="fa-solid fa-circle-notch fa-spin" style={{ marginRight: 8, color: "var(--sage)" }} />Loading appointments…
               </div>
             ) : previewApts.length === 0 ? (
-              <div style={{ padding: 32, color: "#888888", fontSize: 14, textAlign: "center" }}>
-                <i className="fa-solid fa-calendar-xmark" style={{ fontSize: 24, display: "block", marginBottom: 8 }} />
+              <div style={{ padding: 32, color: "var(--theme-text3)", fontSize: 14, textAlign: "center" }}>
+                <i className="fa-solid fa-calendar-xmark" style={{ fontSize: 24, display: "block", marginBottom: 8, color: "var(--theme-text3)", opacity: 0.5 }} />
                 No {currentRole === "patient" ? "upcoming" : "today's"} appointments
               </div>
             ) : (
@@ -183,23 +187,23 @@ export default function DashboardOverview({
                   key={apt.id}
                   style={{
                     padding: "16px 20px", display: "flex", alignItems: "center", gap: 16,
-                    borderBottom: i < previewApts.length - 1 ? "1px solid #efefef" : "none",
-                    transition: "background 0.12s",
+                    borderBottom: i < previewApts.length - 1 ? "1px solid var(--theme-border-soft)" : "none",
+                    transition: "background 0.15s",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.background = "#f8f8f8"}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.background = "var(--theme-table-hover-bg)"}
                   onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.background = "transparent"}
                 >
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <i className="fa-solid fa-clipboard-list" style={{ color: "#fff", fontSize: 14 }} />
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 10px rgba(58,143,122,0.2)" }}>
+                    <i className="fa-solid fa-clipboard-list" style={{ color: "#EDE3D1", fontSize: 14 }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "#111111" }}>{currentRole === "patient" ? apt.doctor : apt.patient}</div>
-                    <div style={{ fontSize: 12, color: "#888888", marginTop: 2 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "var(--theme-text1)" }}>{currentRole === "patient" ? apt.doctor : apt.patient}</div>
+                    <div style={{ fontSize: 12, color: "var(--theme-text3)", marginTop: 2 }}>
                       {currentRole === "patient" ? `${apt.type} · ${apt.date}` : `${apt.doctor ?? ""} · ${apt.type}`}
                     </div>
                   </div>
                   <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#333333" }}>{apt.time}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--theme-text1)" }}>{apt.time}</div>
                     <Badge label={apt.status} color={statusColor[apt.status]} bg={statusBg[apt.status]} />
                   </div>
                 </div>

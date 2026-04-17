@@ -14,6 +14,7 @@ import {
     fetchDashboardStats,
     fetchUsers,
     fetchPatientUsers,
+    fetchDoctorsForDropdown,
     fetchAppointments,
     fetchTodaysAppointments,
     fetchPrescriptions,
@@ -69,7 +70,11 @@ function useQuery<T>(fetcher: () => Promise<T>) {
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 
 export function useDashboardStats() {
-    return useQuery(fetchDashboardStats);
+    const { data: session } = useSession();
+    const userId = session?.user?.id as string | undefined;
+    const role = (session?.user as any)?.role as string | undefined;
+    const fetcher = useCallback(() => fetchDashboardStats(userId, role), [userId, role]);
+    return useQuery(fetcher);
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────
@@ -85,7 +90,7 @@ export function useUsers() {
 
     const resetPassword = useCallback(async (userId: string, newPassword: string) => {
         await changeUserPassword(userId, newPassword, session?.user?.id as string);
-    }, []);
+    }, [session?.user?.id]);
 
     return { ...query, removeUser, resetPassword };
 }
@@ -104,11 +109,20 @@ export function usePatients() {
     return { ...query, removePatient };
 }
 
+// ─── Doctors (lightweight, for dropdowns) ─────────────────────────────────────
+
+export function useDoctors() {
+    return useQuery(fetchDoctorsForDropdown);
+}
+
 // ─── Appointments ──────────────────────────────────────────────────────────────
 
 export function useAppointments() {
     const { data: session } = useSession();
-    const query = useQuery(fetchAppointments);
+    const userId = session?.user?.id as string | undefined;
+    const role = (session?.user as any)?.role as string | undefined;
+    const fetcher = useCallback(() => fetchAppointments(userId, role), [userId, role]);
+    const query = useQuery(fetcher);
 
     const cancel = useCallback(async (appointmentId: string) => {
         try {
@@ -117,7 +131,7 @@ export function useAppointments() {
         } catch (err: any) {
             console.error("Failed to cancel appointment:", err);
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     const markCompleted = useCallback(async (appointmentId: string) => {
         try {
@@ -126,7 +140,7 @@ export function useAppointments() {
         } catch (err: any) {
             console.error("Failed to complete appointment:", err);
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     const updateTime = useCallback(async (appointmentId: string, datetime: string) => {
         try {
@@ -135,7 +149,7 @@ export function useAppointments() {
         } catch (err: any) {
             console.error("Failed to update appointment time:", err);
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     const addAppointment = useCallback(async (
         patientId: string,
@@ -150,20 +164,27 @@ export function useAppointments() {
             console.error("Failed to create appointment:", err);
             throw err;
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     return { ...query, cancel, markCompleted, updateTime, addAppointment };
 }
 
 export function useTodaysAppointments() {
-    return useQuery(fetchTodaysAppointments);
+    const { data: session } = useSession();
+    const userId = session?.user?.id as string | undefined;
+    const role = (session?.user as any)?.role as string | undefined;
+    const fetcher = useCallback(() => fetchTodaysAppointments(userId, role), [userId, role]);
+    return useQuery(fetcher);
 }
 
 // ─── Prescriptions ─────────────────────────────────────────────────────────────
 
 export function usePrescriptions() {
     const { data: session } = useSession();
-    const query = useQuery(fetchPrescriptions);
+    const userId = session?.user?.id as string | undefined;
+    const role = (session?.user as any)?.role as string | undefined;
+    const fetcher = useCallback(() => fetchPrescriptions(userId, role), [userId, role]);
+    const query = useQuery(fetcher);
 
     const renew = useCallback(async (prescriptionId: string, newEndDate?: string) => {
         try {
@@ -173,7 +194,7 @@ export function usePrescriptions() {
         } catch (err: any) {
             console.error("Failed to renew prescription:", err);
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     const addPrescription = useCallback(async (
         patientId: string,
@@ -189,7 +210,7 @@ export function usePrescriptions() {
             console.error("Failed to create prescription:", err);
             throw err;
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     const removePrescription = useCallback(async (prescriptionId: string) => {
         try {
@@ -200,7 +221,7 @@ export function usePrescriptions() {
             console.error("Failed to delete prescription:", err);
             throw err;
         }
-    }, [query.refetch]);
+    }, [query.refetch, session?.user?.id]);
 
     return { ...query, renew, addPrescription, removePrescription };
 }

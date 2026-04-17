@@ -1,4 +1,4 @@
-import { requirePermission } from "@/lib/rbac";
+import { requirePermission, getUserRoles } from "@/lib/rbac";
 import { supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
@@ -15,15 +15,23 @@ export async function GET(req: Request) {
 
   const offset = (page - 1) * limit;
 
-  // Since actor name is in the user table, we might need to join it.
-  // We'll prepare the query
+  // Determine if the current user is an admin
+  const currentUserId = guard.session.user.id;
+  const userRoles = await getUserRoles(currentUserId);
+  const isAdmin = userRoles.some((r) => r.role_name.toLowerCase() === "admin");
+
+  // Build query
   let query = supabase
     .from("audit_log")
     .select("*, user:actor_id(name)", { count: "exact" })
     .order("timestamp", { ascending: false });
 
+  // Non-admin users only see their own audit entries
+  if (!isAdmin) {
+    query = query.eq("actor_id", currentUserId);
+  }
+
   if (actionFilter && actionFilter !== "all") {
-    // Map common frontend action terms to database counterparts if needed
     if (actionFilter.toLowerCase() === "create") {
       query = query.in("action", ["create", "CREATE", "insert", "INSERT"]);
     } else if (actionFilter.toLowerCase() === "update") {
@@ -37,13 +45,6 @@ export async function GET(req: Request) {
   if (entityTypeFilter && entityTypeFilter !== "all") {
     query = query.eq("entity_type", entityTypeFilter);
   }
-  
-  // Note: Filtering by actor (which is a free text string representing a user's name)
-  // across a joined table in Supabase involves a specific syntax or just filtering
-  // the raw `actor_id` directly if we passed an ID. For simplicity, we'll return 
-  // the data and let the client filter by actor name if they choose, OR we 
-  // can use an inner join filter: `.not('user', 'is', null)` which isn't full-text search.
-  // Instead, since it's an admin panel, let's just do exact matching on actor_id if provided.
 
   // Fetch paginated chunk
   const { data, count, error } = await query.range(offset, offset + limit - 1);
@@ -54,7 +55,7 @@ export async function GET(req: Request) {
 
   // Normalize data for the frontend
   const normalized = (data ?? []).map((row: any) => ({
-    id: `al-${row.log_id || row.id}`, // log_id or id depending on the schema
+    id: `al-${row.log_id || row.id}`,
     source: "audit_log",
     user_id: row.actor_id,
     actor: row.user?.name || row.actor_id || "System",
@@ -81,3 +82,4 @@ export async function GET(req: Request) {
     totalPages: count ? Math.ceil(count / limit) : 1
   });
 }
+

@@ -42,41 +42,123 @@ function splitDateTime(iso: string): { date: string; time: string } {
     };
 }
 
+// ─── User-Scoping Resolvers ───────────────────────────────────────────────────
+
+/** Resolve the staff_id (from the staff table) for a given user_id */
+async function resolveStaffId(userId: string): Promise<string | null> {
+    const { data } = await supabase
+        .from("staff")
+        .select("staff_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+    return data?.staff_id ? String(data.staff_id) : null;
+}
+
+/** Resolve the patient_id (from the patient table) for a given user_id */
+export async function resolvePatientId(userId: string): Promise<string | null> {
+    const { data: patientRec } = await supabase
+        .from("patient")
+        .select("patient_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+    return patientRec?.patient_id ? String(patientRec.patient_id) : null;
+}
+
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 
-export async function fetchDashboardStats(): Promise<DashboardStats> {
+export async function fetchDashboardStats(userId?: string, role?: string): Promise<DashboardStats> {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [
-        { count: totalPatients },
-        { count: staffMembers },
-        { count: appointmentsToday },
-        { count: activePrescriptions },
-        { count: rolesCount },
-    ] = await Promise.all([
-        supabase.from("patient").select("*", { count: "exact", head: true }),
-        supabase.from("staff").select("*", { count: "exact", head: true }),
-        supabase
+    // Admin sees global stats
+    const normalizedRole = role?.toLowerCase();
+    if (!userId || normalizedRole === "admin") {
+        const [
+            { count: totalPatients },
+            { count: staffMembers },
+            { count: appointmentsToday },
+            { count: activePrescriptions },
+            { count: rolesCount },
+        ] = await Promise.all([
+            supabase.from("patient").select("*", { count: "exact", head: true }),
+            supabase.from("staff").select("*", { count: "exact", head: true }),
+            supabase
+                .from("appointment")
+                .select("*", { count: "exact", head: true })
+                .gte("appointment_time", todayStart.toISOString())
+                .lte("appointment_time", todayEnd.toISOString()),
+            supabase
+                .from("prescription")
+                .select("*", { count: "exact", head: true })
+                .eq("status", "active"),
+            supabase.from("role").select("*", { count: "exact", head: true }),
+        ]);
+
+        return {
+            totalPatients: totalPatients ?? 0,
+            staffMembers: staffMembers ?? 0,
+            appointmentsToday: appointmentsToday ?? 0,
+            activePrescriptions: activePrescriptions ?? 0,
+            rolesCount: rolesCount ?? 0,
+        };
+    }
+
+    // Staff: scope by staff_id
+    if (normalizedRole === "staff") {
+        const staffId = await resolveStaffId(userId);
+        let aptsQuery = supabase
             .from("appointment")
             .select("*", { count: "exact", head: true })
             .gte("appointment_time", todayStart.toISOString())
-            .lte("appointment_time", todayEnd.toISOString()),
-        supabase
+            .lte("appointment_time", todayEnd.toISOString());
+        let rxQuery = supabase
             .from("prescription")
             .select("*", { count: "exact", head: true })
-            .eq("status", "active"),
-        supabase.from("role").select("*", { count: "exact", head: true }),
-    ]);
+            .eq("status", "active");
+        if (staffId) {
+            aptsQuery = aptsQuery.eq("staff_id", staffId);
+            rxQuery = rxQuery.eq("staff_id", staffId);
+        } else {
+            // Can't resolve staff_id — return zero counts
+            return { totalPatients: 0, staffMembers: 0, appointmentsToday: 0, activePrescriptions: 0, rolesCount: 0 };
+        }
+        const [{ count: appointmentsToday }, { count: activePrescriptions }] = await Promise.all([aptsQuery, rxQuery]);
+        return {
+            totalPatients: 0,
+            staffMembers: 0,
+            appointmentsToday: appointmentsToday ?? 0,
+            activePrescriptions: activePrescriptions ?? 0,
+            rolesCount: 0,
+        };
+    }
 
+    // Patient: scope by patient_id
+    const patientId = await resolvePatientId(userId);
+    let aptsQuery = supabase
+        .from("appointment")
+        .select("*", { count: "exact", head: true })
+        .gte("appointment_time", todayStart.toISOString())
+        .lte("appointment_time", todayEnd.toISOString());
+    let rxQuery = supabase
+        .from("prescription")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+    if (patientId) {
+        aptsQuery = aptsQuery.eq("patient_id", patientId);
+        rxQuery = rxQuery.eq("patient_id", patientId);
+    } else {
+        // Can't resolve patient_id — return zero counts
+        return { totalPatients: 0, staffMembers: 0, appointmentsToday: 0, activePrescriptions: 0, rolesCount: 0 };
+    }
+    const [{ count: appointmentsToday }, { count: activePrescriptions }] = await Promise.all([aptsQuery, rxQuery]);
     return {
-        totalPatients: totalPatients ?? 0,
-        staffMembers: staffMembers ?? 0,
+        totalPatients: 0,
+        staffMembers: 0,
         appointmentsToday: appointmentsToday ?? 0,
         activePrescriptions: activePrescriptions ?? 0,
-        rolesCount: rolesCount ?? 0,
+        rolesCount: 0,
     };
 }
 
@@ -126,6 +208,23 @@ export async function fetchUsers(): Promise<User[]> {
 export async function fetchStaffUsers(): Promise<User[]> {
     const all = await fetchUsers();
     return all.filter((u) => u.role === "staff");
+}
+
+/** Lightweight: fetch active staff/doctors for dropdown selection (no admin perms needed) */
+export async function fetchDoctorsForDropdown(): Promise<{ id: string; name: string }[]> {
+    const { data, error } = await supabase
+        .from("staff")
+        .select("staff_id, user:user_id ( user_id, name, status )")
+        .order("staff_id", { ascending: true });
+
+    if (error) throw new Error(error.message || JSON.stringify(error));
+
+    return (data as any[])
+        .filter((s) => s.user?.status === "active")
+        .map((s) => ({
+            id: String(s.user.user_id),
+            name: s.user.name,
+        }));
 }
 
 /** Fetch only patient users */
@@ -258,8 +357,8 @@ export async function deleteUserRecord(userId: string): Promise<void> {
 }
 // ─── Appointments ──────────────────────────────────────────────────────────────
 
-export async function fetchAppointments(): Promise<Appointment[]> {
-    const { data, error } = await supabase
+export async function fetchAppointments(userId?: string, role?: string): Promise<Appointment[]> {
+    let query = supabase
         .from("appointment")
         .select(`
       appointment_id,
@@ -267,9 +366,30 @@ export async function fetchAppointments(): Promise<Appointment[]> {
       appointment_type,
       status,
       patient:patient_id ( patient_name ),
-      staff:staff_id ( user:user_id ( name ) )
+      staff:staff_id ( staff_id, user:user_id ( name ) )
     `)
         .order("appointment_time", { ascending: true });
+
+    // Scope by role for non-admins
+    const normalizedRole = role?.toLowerCase();
+    if (userId && normalizedRole === "staff") {
+        const staffId = await resolveStaffId(userId);
+        if (staffId) {
+            query = query.eq("staff_id", staffId);
+        } else {
+            return []; // Can't resolve — return empty
+        }
+    } else if (userId && normalizedRole !== "admin") {
+        // patient or any other role
+        const patientId = await resolvePatientId(userId);
+        if (patientId) {
+            query = query.eq("patient_id", patientId);
+        } else {
+            return []; // Can't resolve — return empty
+        }
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message || JSON.stringify(error));
 
@@ -287,13 +407,13 @@ export async function fetchAppointments(): Promise<Appointment[]> {
     });
 }
 
-export async function fetchTodaysAppointments(): Promise<Appointment[]> {
+export async function fetchTodaysAppointments(userId?: string, role?: string): Promise<Appointment[]> {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const { data, error } = await supabase
+    let query = supabase
         .from("appointment")
         .select(`
       appointment_id,
@@ -301,11 +421,31 @@ export async function fetchTodaysAppointments(): Promise<Appointment[]> {
       appointment_type,
       status,
       patient:patient_id ( patient_name ),
-      staff:staff_id ( user:user_id ( name ) )
+      staff:staff_id ( staff_id, user:user_id ( name ) )
     `)
         .gte("appointment_time", todayStart.toISOString())
         .lte("appointment_time", todayEnd.toISOString())
         .order("appointment_time", { ascending: true });
+
+    // Scope by role for non-admins
+    const normalizedRole = role?.toLowerCase();
+    if (userId && normalizedRole === "staff") {
+        const staffId = await resolveStaffId(userId);
+        if (staffId) {
+            query = query.eq("staff_id", staffId);
+        } else {
+            return [];
+        }
+    } else if (userId && normalizedRole !== "admin") {
+        const patientId = await resolvePatientId(userId);
+        if (patientId) {
+            query = query.eq("patient_id", patientId);
+        } else {
+            return [];
+        }
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message || JSON.stringify(error));
 
@@ -393,8 +533,8 @@ export async function createAppointment(
 
 // ─── Prescriptions ─────────────────────────────────────────────────────────────
 
-export async function fetchPrescriptions(): Promise<Prescription[]> {
-    const { data, error } = await supabase
+export async function fetchPrescriptions(userId?: string, role?: string): Promise<Prescription[]> {
+    let query = supabase
         .from("prescription")
         .select(`
       prescription_id,
@@ -404,9 +544,30 @@ export async function fetchPrescriptions(): Promise<Prescription[]> {
       prescribed_at,
       Dosage_end_Date,
       patient:patient_id ( patient_name ),
-      staff:staff_id ( user:user_id ( name ) )
+      staff:staff_id ( staff_id, user:user_id ( name ) )
     `)
         .order("prescribed_at", { ascending: false });
+
+    // Scope by role for non-admins
+    const normalizedRole = role?.toLowerCase();
+    if (userId && normalizedRole === "staff") {
+        const staffId = await resolveStaffId(userId);
+        if (staffId) {
+            query = query.eq("staff_id", staffId);
+        } else {
+            return [];
+        }
+    } else if (userId && normalizedRole !== "admin") {
+        // patient or any other role
+        const patientId = await resolvePatientId(userId);
+        if (patientId) {
+            query = query.eq("patient_id", patientId);
+        } else {
+            return [];
+        }
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error("[PRESCRIPTION FETCH] Error:", JSON.stringify(error));

@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Badge, ActionButton } from "@/components/DashboardShared";
 import { useUsers } from "@/hooks/useAdminData";
+import { T } from "./themeTokens";
 
 export default function ProfileSection({ currentRole }: { currentRole: string }) {
   const { data: session } = useSession();
@@ -135,17 +136,17 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
 
   return (
     <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-start" }}>
-      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16, padding: 32, flex: "0 0 280px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+      <div style={{ background: T.cardBg, border: `1px solid ${T.cardBorder}`, borderRadius: 16, padding: 32, flex: "0 0 280px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
         <div style={{ position: "relative" }}>
           {/* Avatar circle: shows photo if available, else initials */}
           <div
             onClick={() => fileInputRef.current?.click()}
             style={{
               width: 90, height: 90, borderRadius: 20,
-              background: "linear-gradient(135deg, #0d9488, #14b8a6)",
-              color: "#fff", display: "flex", alignItems: "center",
+              background: "linear-gradient(135deg, #3A8F7A, #144E42)",
+              color: "#EDE3D1", display: "flex", alignItems: "center",
               justifyContent: "center", fontSize: 28, fontWeight: 700,
-              boxShadow: "0 8px 24px rgba(22,163,74,0.3)",
+              boxShadow: "0 8px 24px rgba(58,143,122,0.35)",
               overflow: "hidden", cursor: "pointer", position: "relative",
               transition: "opacity 0.2s",
             }}
@@ -169,31 +170,33 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
             {/* Loading spinner overlay */}
             {avatarLoading && (
               <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
-                <i className="fa-solid fa-circle-notch fa-spin" style={{ color: "#fff", fontSize: 22 }} />
+                <i className="fa-solid fa-circle-notch fa-spin" style={{ color: "#EDE3D1", fontSize: 22 }} />
               </div>
             )}
           </div>
           {/* Camera icon badge */}
-          <div style={{ position: "absolute", bottom: -4, right: -4, width: 26, height: 26, borderRadius: "50%", background: "#fff", border: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,0.1)", pointerEvents: "none" }}>
-            <i className="fa-solid fa-camera" style={{ color: "#4b5563", fontSize: 11 }} />
+          <div style={{ position: "absolute", bottom: -4, right: -4, width: 26, height: 26, borderRadius: "50%", background: T.cardBg, border: `1px solid ${T.cardBorder}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,0.15)", pointerEvents: "none" }}>
+            <i className="fa-solid fa-camera" style={{ color: T.text2, fontSize: 11 }} />
           </div>
           <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} />
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", fontFamily: "'Outfit', sans-serif" }}>{userName}</div>
-          <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{userEmail}</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: T.text1, fontFamily: "'Inter', sans-serif" }}>{userName}</div>
+          <div style={{ fontSize: 13, color: T.text3, marginTop: 2 }}>{userEmail}</div>
         </div>
-        <Badge label={currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} color="#0d9488" bg="#f0fdfa" />
+        <Badge label={currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} color={T.sage} bg={T.successBg} />
         <button
           onClick={() => { setShowNameModal(true); setNewName(userName); setNameError(""); setNameSuccess(""); }}
-          style={{ background: "#f0fdfa", border: "1px solid #ccfbf1", borderRadius: 8, padding: "8px 16px", color: "#0d9488", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}
+          style={{ background: T.infoBg, border: `1px solid ${T.infoBorder}`, borderRadius: 8, padding: "8px 16px", color: T.sage, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(58,143,122,0.2)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = T.infoBg)}
         >
           <i className="fa-solid fa-pen" style={{ fontSize: 11 }} /> Edit Name
         </button>
       </div>
-      <div style={{ flex: 1, minWidth: 300, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16, padding: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 16, fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 9 }}>
-          <i className="fa-solid fa-lock" style={{ color: "#0d9488", fontSize: 16 }} />
+      <div style={{ flex: 1, minWidth: 300, background: T.cardBg, border: `1px solid ${T.cardBorder}`, borderRadius: 16, padding: 24, boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: T.text1, marginBottom: 16, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", gap: 9 }}>
+          <i className="fa-solid fa-lock" style={{ color: T.sage, fontSize: 16 }} />
           Security
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -204,15 +207,29 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
             { label: "Sign Out of All Sessions", icon: "fa-solid fa-right-from-bracket", danger: true, onClick: () => signOut({ callbackUrl: "/" }) },
           ].map((item) => (
             <button key={item.label} onClick={item.onClick} style={{
-              background: item.danger ? "#fef2f2" : "#f9fafb",
-              border: `1px solid ${item.danger ? "#fee2e2" : "#e5e7eb"}`,
+              background: item.danger ? T.dangerBg : "rgba(20,78,66,0.4)",
+              border: `1px solid ${item.danger ? T.dangerBorder : T.cardBorder}`,
               borderRadius: 9, padding: "12px 16px",
-              color: item.danger ? "#dc2626" : "#374151",
+              color: item.danger ? "#f87171" : T.text2,
               fontSize: 13, fontWeight: 600, cursor: "pointer",
               textAlign: "left", fontFamily: "inherit",
               display: "flex", alignItems: "center", gap: 10,
-            }}>
-              <i className={item.icon} style={{ fontSize: 14, width: 16, color: item.danger ? "#dc2626" : "#9ca3af" }} />
+              transition: "all 0.15s",
+            }}
+              onMouseEnter={(e) => {
+                if (!item.danger) {
+                  (e.currentTarget as HTMLButtonElement).style.background = T.tableHoverBg;
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(58,143,122,0.25)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.danger) {
+                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(20,78,66,0.4)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = T.cardBorder;
+                }
+              }}
+            >
+              <i className={item.icon} style={{ fontSize: 14, width: 16, color: item.danger ? "#f87171" : T.text3 }} />
               {item.label}
             </button>
           ))}
@@ -223,63 +240,63 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
         <div
           onClick={() => { setShowPwModal(false); setPwError(""); setPwSuccess(""); setNewPassword(""); setConfirmPassword(""); }}
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)",
+            position: "fixed", inset: 0, background: T.modalOverlay,
             display: "flex", alignItems: "center", justifyContent: "center",
-            zIndex: 1000, backdropFilter: "blur(3px)",
+            zIndex: 1000, backdropFilter: "blur(6px)",
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: 16, width: 420, maxWidth: "92vw",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden",
+              background: T.modalBg, border: `1px solid ${T.modalBorder}`, borderRadius: 16, width: 420, maxWidth: "92vw",
+              boxShadow: T.modalShadow, overflow: "hidden", backdropFilter: "blur(20px)",
             }}
           >
-            <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 8 }}>
-                <i className="fa-solid fa-key" style={{ color: "#0d9488" }} />
+            <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.modalHeaderBorder}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text1, display: "flex", alignItems: "center", gap: 8 }}>
+                <i className="fa-solid fa-key" style={{ color: T.sage }} />
                 Update Security Credentials
               </div>
               <button 
                 onClick={() => { setShowPwModal(false); setPwError(""); setPwSuccess(""); setNewPassword(""); setConfirmPassword(""); }}
                 style={{ background: "none", border: "none", cursor: "pointer", width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = T.closeBtnHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
-                <i className="fa-solid fa-xmark" style={{ color: "#9ca3af", fontSize: 16 }} />
+                <i className="fa-solid fa-xmark" style={{ color: T.text3, fontSize: 16 }} />
               </button>
             </div>
             
             <div style={{ padding: "20px 24px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>New Password</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: T.textLabel, display: "block", marginBottom: 5 }}>New Password</label>
                   <input type="password" placeholder="Enter new password (min 6 chars)" value={newPassword}
                     onChange={(e) => { setNewPassword(e.target.value); setPwError(""); setPwSuccess(""); }}
-                    style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}
+                    style={{ width: "100%", background: T.inputBg, border: `1px solid ${T.inputBorder}`, borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box", color: T.text1 }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Confirm Password</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: T.textLabel, display: "block", marginBottom: 5 }}>Confirm Password</label>
                   <input type="password" placeholder="Re-enter new password" value={confirmPassword}
                     onChange={(e) => { setConfirmPassword(e.target.value); setPwError(""); setPwSuccess(""); }}
-                    style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}
+                    style={{ width: "100%", background: T.inputBg, border: `1px solid ${T.inputBorder}`, borderRadius: 9, padding: "10px 14px", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box", color: T.text1 }}
                   />
                 </div>
               </div>
               {pwError && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fee2e2", borderRadius: 8, color: "#dc2626", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: T.errorBg, border: `1px solid ${T.errorBorder}`, borderRadius: 8, color: T.errorColor, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
                   <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 13 }} />{pwError}
                 </div>
               )}
               {pwSuccess && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#f0fdfa", border: "1px solid #ccfbf1", borderRadius: 8, color: "#0d9488", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: T.successBg, border: `1px solid ${T.successBorder}`, borderRadius: 8, color: T.successColor, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
                   <i className="fa-solid fa-circle-check" style={{ fontSize: 13 }} />{pwSuccess}
                 </div>
               )}
             </div>
 
-            <div style={{ padding: "14px 24px", borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "flex-end", gap: 10, background: "#f9fafb" }}>
+            <div style={{ padding: "14px 24px", borderTop: `1px solid ${T.modalHeaderBorder}`, display: "flex", justifyContent: "flex-end", gap: 10, background: T.modalFooterBg }}>
               <ActionButton onClick={() => { setShowPwModal(false); setPwError(""); setPwSuccess(""); setNewPassword(""); setConfirmPassword(""); }}>Cancel</ActionButton>
               <ActionButton variant="primary" onClick={handlePasswordChange} disabled={pwSaving}>
                 {pwSaving
@@ -297,58 +314,58 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
         <div
           onClick={() => { setShowNameModal(false); setNameError(""); setNameSuccess(""); }}
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)",
+            position: "fixed", inset: 0, background: T.modalOverlay,
             display: "flex", alignItems: "center", justifyContent: "center",
-            zIndex: 1000, backdropFilter: "blur(3px)",
+            zIndex: 1000, backdropFilter: "blur(6px)",
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: 16, width: 420, maxWidth: "92vw",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden",
+              background: T.modalBg, border: `1px solid ${T.modalBorder}`, borderRadius: 16, width: 420, maxWidth: "92vw",
+              boxShadow: T.modalShadow, overflow: "hidden", backdropFilter: "blur(20px)",
             }}
           >
-            <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 8 }}>
-                <i className="fa-solid fa-pen" style={{ color: "#0d9488" }} />
+            <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.modalHeaderBorder}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text1, display: "flex", alignItems: "center", gap: 8 }}>
+                <i className="fa-solid fa-pen" style={{ color: T.sage }} />
                 Change Display Name
               </div>
               <button 
                 onClick={() => { setShowNameModal(false); setNameError(""); setNameSuccess(""); }}
                 style={{ background: "none", border: "none", cursor: "pointer", width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = T.closeBtnHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
-                <i className="fa-solid fa-xmark" style={{ color: "#9ca3af", fontSize: 16 }} />
+                <i className="fa-solid fa-xmark" style={{ color: T.text3, fontSize: 16 }} />
               </button>
             </div>
             
             <div style={{ padding: "20px 24px" }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 5 }}>Display Name</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: T.textLabel, display: "block", marginBottom: 5 }}>Display Name</label>
                 <input
                   autoFocus
                   type="text"
                   placeholder="Enter your new name"
                   value={newName}
                   onChange={(e) => { setNewName(e.target.value); setNameError(""); setNameSuccess(""); }}
-                  style={{ width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 14px", fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}
+                  style={{ width: "100%", background: T.inputBg, border: `1px solid ${T.inputBorder}`, borderRadius: 9, padding: "10px 14px", fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box", color: T.text1 }}
                 />
               </div>
               {nameError && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fee2e2", borderRadius: 8, color: "#dc2626", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: T.errorBg, border: `1px solid ${T.errorBorder}`, borderRadius: 8, color: T.errorColor, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
                   <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 13 }} />{nameError}
                 </div>
               )}
               {nameSuccess && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#f0fdfa", border: "1px solid #ccfbf1", borderRadius: 8, color: "#0d9488", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: T.successBg, border: `1px solid ${T.successBorder}`, borderRadius: 8, color: T.successColor, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
                   <i className="fa-solid fa-circle-check" style={{ fontSize: 13 }} />{nameSuccess}
                 </div>
               )}
             </div>
 
-            <div style={{ padding: "14px 24px", borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "flex-end", gap: 10, background: "#f9fafb" }}>
+            <div style={{ padding: "14px 24px", borderTop: `1px solid ${T.modalHeaderBorder}`, display: "flex", justifyContent: "flex-end", gap: 10, background: T.modalFooterBg }}>
               <ActionButton onClick={() => { setShowNameModal(false); setNameError(""); setNameSuccess(""); }}>Cancel</ActionButton>
               <ActionButton variant="primary" onClick={handleNameChange} disabled={nameSaving || newName.trim() === userName}>
                 {nameSaving
