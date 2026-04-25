@@ -91,7 +91,7 @@ export interface Appointment {
     date: string;
     time: string;
     type: string;
-    status: "confirmed" | "pending" | "cancelled" | "completed";
+    status: "confirmed" | "pending" | "cancelled" | "completed" | "scheduled";
 }
 
 export interface Prescription {

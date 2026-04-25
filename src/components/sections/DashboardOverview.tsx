@@ -79,7 +79,7 @@ export default function DashboardOverview({
   const scheduledPct = (appointments && appointments.length > 0) ? Math.round((scheduled.length / appointments.length) * 100) : 0;
 
   // Build stats cards based on role/permissions
-  const statCards: { iconClass: string; label: string; value: string | number; loading: boolean; isCircular?: boolean; pct?: number; totalValue?: number | string; sub?: string; hasCalendar?: boolean; }[] = [];
+  const statCards: { iconClass: string; label: string; value: string | number; loading: boolean; isCircular?: boolean; pct?: number; totalValue?: number | string; sub?: string; hasCalendar?: boolean; hasStaffBreakdown?: boolean; hasPatientsList?: boolean; }[] = [];
 
   if (currentRole === "admin") {
     statCards.push(
@@ -122,7 +122,7 @@ export default function DashboardOverview({
 
   // Determine which appointments to show in the preview
   const previewApts: Appointment[] = currentRole === "patient"
-    ? upcoming.slice(0, 4)
+    ? scheduled.slice(0, 4)
     : (todayApts ?? []).slice(0, 5);
   const previewLoading = currentRole === "patient" ? aptsLoading : todayLoading;
   const previewLabel = currentRole === "patient" ? "Upcoming Appointments" : "Today's Appointments";
