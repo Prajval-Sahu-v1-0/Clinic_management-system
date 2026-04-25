@@ -285,7 +285,9 @@ export default function DashboardOverview({
                   </div>
                 </div>
               ) : (
-                <StatCard key={s.label} {...s} />
+                <div key={s.label} style={{ alignSelf: "start" }}>
+                  <StatCard {...s} />
+                </div>
               )
             )}
           </div>
