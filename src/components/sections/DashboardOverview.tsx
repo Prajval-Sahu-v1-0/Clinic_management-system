@@ -57,6 +57,14 @@ export default function DashboardOverview({
   const activeRx = (prescriptions ?? []).filter((r) => r.status === "active");
   const completedCount = (appointments ?? []).filter((a) => a.status === "completed").length;
 
+  // Unique patients with active prescriptions
+  const activeRxPatients: string[] = React.useMemo(() => {
+    const seen = new Set<string>();
+    return activeRx
+      .map(rx => rx.patient)
+      .filter((name): name is string => !!name && !seen.has(name) && seen.add(name) !== undefined);
+  }, [activeRx]);
+
   // Determine greeting
   const greeting = currentRole === "patient" ? `Welcome back, ${userName}` : `Good morning, ${userName}`;
   const subtitle = currentRole === "patient"
@@ -76,7 +84,7 @@ export default function DashboardOverview({
   if (currentRole === "admin") {
     statCards.push(
       { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
-      { iconClass: "fa-solid fa-user-injured", label: "Total Patients", value: stats?.totalPatients ?? "—", loading: statsLoading },
+      { iconClass: "fa-solid fa-user-injured", label: "Total Patients", value: stats?.totalPatients ?? "—", loading: statsLoading, hasPatientsList: true },
       { iconClass: "fa-solid fa-user-nurse", label: "Staff Members", value: stats?.staffMembers ?? "—", loading: statsLoading, hasStaffBreakdown: true },
       { iconClass: "fa-solid fa-shield-halved", label: "Roles Defined", value: stats?.rolesCount ?? "—", loading: statsLoading },
     );
@@ -219,6 +227,60 @@ export default function DashboardOverview({
                     ))}
                     {usersLoading && (
                       <div style={{ height: 12, borderRadius: 6, background: "var(--theme-border-soft)", animation: "shimmer 1.4s infinite" }} />
+                    )}
+                  </div>
+                </div>
+              ) : (s as any).hasPatientsList ? (
+                <div key={s.label} style={{
+                  background: "var(--theme-card-bg)",
+                  border: "1px solid var(--theme-card-border)",
+                  borderRadius: 18,
+                  padding: "20px 22px",
+                  display: "flex", flexDirection: "column", gap: 12,
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  boxShadow: "var(--theme-card-shadow)",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  {/* Glow */}
+                  <div style={{ position: "absolute", top: -30, right: -30, width: 80, height: 80, borderRadius: "50%", background: "rgba(58,143,122,0.15)", filter: "blur(20px)", pointerEvents: "none" }} />
+
+                  {/* Icon + label */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px rgba(58,143,122,0.3)" }}>
+                      <i className="fa-solid fa-user-injured" style={{ color: "#EDE3D1", fontSize: 15 }} />
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--theme-text2)", fontWeight: 500 }}>{s.label}</div>
+                  </div>
+
+                  {/* Total count */}
+                  {s.loading ? (
+                    <div style={{ height: 30, width: 50, borderRadius: 6, background: "var(--theme-border-soft)", animation: "shimmer 1.4s infinite" }} />
+                  ) : (
+                    <div style={{ fontSize: 30, fontWeight: 700, color: "var(--theme-text1)", lineHeight: 1, letterSpacing: "-0.5px" }}>{s.value}</div>
+                  )}
+
+                  {/* Active Rx patient list */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: "var(--theme-text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+                      Active Prescriptions
+                    </div>
+                    {rxLoading ? (
+                      <>
+                        <div style={{ height: 10, borderRadius: 4, background: "var(--theme-border-soft)", animation: "shimmer 1.4s infinite", marginBottom: 4 }} />
+                        <div style={{ height: 10, width: "70%", borderRadius: 4, background: "var(--theme-border-soft)", animation: "shimmer 1.4s infinite" }} />
+                      </>
+                    ) : activeRxPatients.length === 0 ? (
+                      <div style={{ fontSize: 11, color: "var(--theme-text3)", fontStyle: "italic" }}>No active prescriptions</div>
+                    ) : (
+                      <div style={{ maxHeight: 90, overflowY: "auto" }}>
+                        {activeRxPatients.map((name, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "3px 0", borderBottom: i < activeRxPatients.length - 1 ? "1px solid var(--theme-border-soft)" : "none" }}>
+                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--sage)", flexShrink: 0 }} />
+                            <span style={{ fontSize: 11, color: "var(--theme-text2)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
