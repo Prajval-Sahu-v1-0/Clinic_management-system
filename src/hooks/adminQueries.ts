@@ -32,12 +32,11 @@ function toMonthYear(iso: string): string {
 
 /** Formats an ISO datetime to separate date + time strings */
 function splitDateTime(iso: string): { date: string; time: string } {
+    // Extract date directly from ISO string to avoid UTC→local timezone shift
+    const datePart = iso.split("T")[0]; // "YYYY-MM-DD" — always correct regardless of TZ
     const d = new Date(iso);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
     return {
-        date: `${year}-${month}-${day}`,
+        date: datePart,
         time: d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
     };
 }

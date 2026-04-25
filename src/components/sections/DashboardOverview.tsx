@@ -52,15 +52,15 @@ export default function DashboardOverview({
 
   if (currentRole === "admin") {
     statCards.push(
+      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-user-injured", label: "Total Patients", value: stats?.totalPatients ?? "—", loading: statsLoading },
       { iconClass: "fa-solid fa-user-nurse", label: "Staff Members", value: stats?.staffMembers ?? "—", loading: statsLoading },
-      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-shield-halved", label: "Roles Defined", value: stats?.rolesCount ?? "—", loading: statsLoading },
     );
   } else if (currentRole === "staff") {
     statCards.push(
-      { iconClass: "fa-solid fa-calendar-check", label: "Today's Appointments", value: (todayApts ?? []).length, loading: todayLoading },
       { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
+      { iconClass: "fa-solid fa-calendar-check", label: "Today's Appointments", value: (todayApts ?? []).length, loading: todayLoading },
       { iconClass: "fa-solid fa-clipboard-check", label: "Completed Today", value: (todayApts ?? []).filter((a) => a.status === "completed").length, loading: todayLoading },
     );
   } else {
@@ -139,7 +139,7 @@ export default function DashboardOverview({
       </div>
 
       {/* ── Stat Cards + Prescriptions Widget row ─────────────────────────── */}
-      <div style={{ display: "flex", gap: 20, alignItems: "stretch" }}>
+      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
 
         {/* Stat cards column */}
         <div style={{ flex: "2 1 0", minWidth: 0 }}>

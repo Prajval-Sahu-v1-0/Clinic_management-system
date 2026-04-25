@@ -72,7 +72,7 @@ export function StatCard({
           borderRadius: "50%", background: "rgba(58,143,122,0.1)", filter: "blur(20px)",
           pointerEvents: "none",
         }} />
-        
+
         {loading ? (
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(90deg, var(--theme-border-soft) 25%, var(--theme-border) 50%, var(--theme-border-soft) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
         ) : (
@@ -166,7 +166,7 @@ export function StatCard({
 export function CalendarStatCard({
   iconClass, label, value, sub, loading, pct = 0, totalValue, appointments = []
 }: {
-  iconClass: string; label: string; value: string | number; sub?: string; loading?: boolean; pct?: number; totalValue?: number | string; appointments?: any[]; 
+  iconClass: string; label: string; value: string | number; sub?: string; loading?: boolean; pct?: number; totalValue?: number | string; appointments?: any[];
 }) {
   const [currentDate, setCurrentDate] = React.useState(new Date());
 
@@ -202,7 +202,7 @@ export function CalendarStatCard({
 
   const getAppointmentsForDay = (d: number) => {
     const dateStr = getLocalDateString(d);
-    return appointments.filter(a => a.date === dateStr && a.status !== "cancelled");
+    return appointments.filter(a => a.date === dateStr);
   };
 
   const formatDocName = (name?: string) => {
@@ -230,10 +230,10 @@ export function CalendarStatCard({
         borderRadius: "50%", background: "rgba(58,143,122,0.1)", filter: "blur(20px)",
         pointerEvents: "none",
       }} />
-      
+
       {/* Left side: Circular Progress */}
-      <div style={{ 
-        flex: "0 0 160px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, borderRight: "1px solid var(--theme-border-soft)", paddingRight: 24 
+      <div style={{
+        flex: "0 0 160px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, borderRight: "1px solid var(--theme-border-soft)", paddingRight: 24
       }}>
         {loading ? (
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(90deg, var(--theme-border-soft) 25%, var(--theme-border) 50%, var(--theme-border-soft) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
@@ -241,10 +241,10 @@ export function CalendarStatCard({
           <div style={{ position: "relative", width: 90, height: 90, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="90" height="90" viewBox="0 0 80 80" style={{ transform: "rotate(-90deg)" }}>
               <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--theme-border-soft)" strokeWidth="10" />
-              <circle 
-                cx="40" cy="40" r={radius} fill="none" stroke="url(#stat-grad)" strokeWidth="10" 
-                strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset} 
-                style={{ transition: "stroke-dashoffset 1s ease" }} 
+              <circle
+                cx="40" cy="40" r={radius} fill="none" stroke="url(#stat-grad)" strokeWidth="10"
+                strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
+                style={{ transition: "stroke-dashoffset 1s ease" }}
               />
               <defs>
                 <linearGradient id="stat-grad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -298,33 +298,30 @@ export function CalendarStatCard({
           {days.map((day, idx) => {
             if (!day) return <div key={idx} />;
             const today = isToday(day);
-            const dayApts = getAppointmentsForDay(day);
-            const marked = dayApts.length > 0;
+            const marked = getAppointmentsForDay(day).length > 0;
             return (
-              <div key={idx} style={{ 
-                height: 40, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", 
-                borderRadius: 6, fontSize: 11, fontWeight: today || marked ? 600 : 500,
-                background: today ? "linear-gradient(135deg, #3A8F7A, #144E42)" : (marked ? "var(--theme-table-hover-bg)" : "transparent"),
-                color: today ? "#EDE3D1" : (marked ? "var(--sage)" : "var(--theme-text2)"),
-                border: marked && !today ? "1px solid var(--sage)" : "1px solid transparent",
+              <div key={idx} style={{
+                height: 36, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                borderRadius: 6,
+                background: today
+                  ? "linear-gradient(135deg, #3A8F7A, #144E42)"
+                  : (marked ? "rgba(58,143,122,0.12)" : "transparent"),
+                border: marked && !today ? "1px solid rgba(58,143,122,0.3)" : "1px solid transparent",
                 position: "relative",
-                paddingTop: 3,
-                overflow: "hidden"
               }}>
-                <div style={{ lineHeight: 1 }}>{day}</div>
-                {marked && (
-                  <div style={{ 
-                    marginTop: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 2, width: "100%", paddingLeft: 1, paddingRight: 1 
-                  }}>
-                    {dayApts.slice(0, 1).map((a, i) => (
-                      <div key={i} title={dayApts.length > 1 ? `${dayApts.length} Appointments` : a.doctor} style={{
-                        fontSize: 8, color: today ? "#fff" : "var(--sage)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", 
-                        textAlign: "center", background: today ? "rgba(255,255,255,0.2)" : "rgba(169, 216, 200, 0.15)", borderRadius: 2, padding: "1px 0"
-                      }}>
-                        {dayApts.length > 1 ? `+${dayApts.length}` : formatDocName(a.doctor)}
-                      </div>
-                    ))}
-                  </div>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: marked || today ? 600 : 400,
+                  color: today ? "#EDE3D1" : (marked ? "var(--sage)" : "var(--theme-text2)"),
+                }}>
+                  {day}
+                </div>
+                {marked && !today && (
+                  <span style={{
+                    position: "absolute", bottom: 3,
+                    width: 4, height: 4, borderRadius: "50%",
+                    background: "var(--sage)", display: "block",
+                  }} />
                 )}
               </div>
             );
