@@ -163,6 +163,178 @@ export function StatCard({
   );
 }
 
+export function CalendarStatCard({
+  iconClass, label, value, sub, loading, pct = 0, totalValue, appointments = []
+}: {
+  iconClass: string; label: string; value: string | number; sub?: string; loading?: boolean; pct?: number; totalValue?: number | string; appointments?: any[]; 
+}) {
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (circumference * pct) / 100;
+
+  // Calendar logic
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const days = Array.from({ length: 42 }, (_, i) => {
+    const dayRender = i - firstDay + 1;
+    if (dayRender > 0 && dayRender <= daysInMonth) return dayRender;
+    return null;
+  });
+
+  const changeMonth = (dir: number) => {
+    setCurrentDate(new Date(year, month + dir, 1));
+  };
+
+  const getLocalDateString = (d: number) => {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${year}-${pad(month + 1)}-${pad(d)}`;
+  };
+
+  const isToday = (d: number) => {
+    const today = new Date();
+    return d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+  };
+
+  const getAppointmentsForDay = (d: number) => {
+    const dateStr = getLocalDateString(d);
+    return appointments.filter(a => a.date === dateStr && a.status !== "cancelled");
+  };
+
+  const formatDocName = (name?: string) => {
+    if (!name) return "Doc";
+    return name.replace(/^Dr\.\s*/i, "");
+  };
+
+  return (
+    <div style={{
+      gridColumn: "1 / -1", // Will span the entire row functionally, or explicitly span logic depending on grid setup
+      background: "var(--theme-card-bg)",
+      border: "1px solid var(--theme-card-border)",
+      borderRadius: 18,
+      padding: "20px",
+      display: "flex", gap: 24, alignItems: "stretch",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      boxShadow: "var(--theme-card-shadow)",
+      position: "relative", overflow: "hidden",
+      transition: "transform 0.2s, box-shadow 0.2s",
+    }}>
+      {/* Subtle glow accent */}
+      <div style={{
+        position: "absolute", top: -30, right: -30, width: 120, height: 120,
+        borderRadius: "50%", background: "rgba(58,143,122,0.1)", filter: "blur(20px)",
+        pointerEvents: "none",
+      }} />
+      
+      {/* Left side: Circular Progress */}
+      <div style={{ 
+        flex: "0 0 160px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, borderRight: "1px solid var(--theme-border-soft)", paddingRight: 24 
+      }}>
+        {loading ? (
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(90deg, var(--theme-border-soft) 25%, var(--theme-border) 50%, var(--theme-border-soft) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+        ) : (
+          <div style={{ position: "relative", width: 90, height: 90, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="90" height="90" viewBox="0 0 80 80" style={{ transform: "rotate(-90deg)" }}>
+              <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--theme-border-soft)" strokeWidth="10" />
+              <circle 
+                cx="40" cy="40" r={radius} fill="none" stroke="url(#stat-grad)" strokeWidth="10" 
+                strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset} 
+                style={{ transition: "stroke-dashoffset 1s ease" }} 
+              />
+              <defs>
+                <linearGradient id="stat-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#c9832a" />
+                  <stop offset="50%" stopColor="#56b89e" />
+                  <stop offset="100%" stopColor="#3A8F7A" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div style={{ position: "absolute", fontSize: 20, fontWeight: 700, color: "var(--theme-text1)", fontFamily: "'Inter', sans-serif" }}>
+              {pct}%
+            </div>
+          </div>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
+          <div style={{ fontSize: 13, color: "var(--theme-text2)", fontWeight: 500, opacity: 0.9 }}>{label}</div>
+          {!loading && totalValue !== undefined && (
+            <div style={{ fontSize: 11, color: "var(--theme-text3)", fontWeight: 500 }}>
+              {value} / {totalValue} Total
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right side: Mini Calendar */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--theme-text1)", display: "flex", alignItems: "center", gap: 6 }}>
+            <i className="fa-regular fa-calendar-days" style={{ color: "var(--sage)", fontSize: 13 }} />
+            {currentDate.toLocaleString("default", { month: "long" })} {year}
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => changeMonth(-1)} style={{ background: "none", border: "1px solid var(--theme-border-soft)", borderRadius: 6, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--theme-text2)", transition: "all 0.15s" }} onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "var(--theme-table-hover-bg)")} onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "none")}>
+              <i className="fa-solid fa-chevron-left" style={{ fontSize: 10 }} />
+            </button>
+            <button onClick={() => changeMonth(1)} style={{ background: "none", border: "1px solid var(--theme-border-soft)", borderRadius: 6, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--theme-text2)", transition: "all 0.15s" }} onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "var(--theme-table-hover-bg)")} onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "none")}>
+              <i className="fa-solid fa-chevron-right" style={{ fontSize: 10 }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Days Header */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 8 }}>
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+            <div key={d} style={{ textAlign: "center", fontSize: 11, fontWeight: 600, color: "var(--theme-text3)", textTransform: "uppercase" }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Calendar Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px 4px" }}>
+          {days.map((day, idx) => {
+            if (!day) return <div key={idx} />;
+            const today = isToday(day);
+            const dayApts = getAppointmentsForDay(day);
+            const marked = dayApts.length > 0;
+            return (
+              <div key={idx} style={{ 
+                height: 40, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", 
+                borderRadius: 6, fontSize: 11, fontWeight: today || marked ? 600 : 500,
+                background: today ? "linear-gradient(135deg, #3A8F7A, #144E42)" : (marked ? "var(--theme-table-hover-bg)" : "transparent"),
+                color: today ? "#EDE3D1" : (marked ? "var(--sage)" : "var(--theme-text2)"),
+                border: marked && !today ? "1px solid var(--sage)" : "1px solid transparent",
+                position: "relative",
+                paddingTop: 3,
+                overflow: "hidden"
+              }}>
+                <div style={{ lineHeight: 1 }}>{day}</div>
+                {marked && (
+                  <div style={{ 
+                    marginTop: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 2, width: "100%", paddingLeft: 1, paddingRight: 1 
+                  }}>
+                    {dayApts.slice(0, 1).map((a, i) => (
+                      <div key={i} title={dayApts.length > 1 ? `${dayApts.length} Appointments` : a.doctor} style={{
+                        fontSize: 8, color: today ? "#fff" : "var(--sage)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", 
+                        textAlign: "center", background: today ? "rgba(255,255,255,0.2)" : "rgba(169, 216, 200, 0.15)", borderRadius: 2, padding: "1px 0"
+                      }}>
+                        {dayApts.length > 1 ? `+${dayApts.length}` : formatDocName(a.doctor)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ActionButton({
   children, variant = "secondary", onClick, disabled, type = "button"
 }: {

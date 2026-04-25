@@ -1,6 +1,6 @@
 "use client";
 
-import { StatCard, Badge, statusColor, statusBg } from "@/components/DashboardShared";
+import { StatCard, CalendarStatCard, Badge, statusColor, statusBg } from "@/components/DashboardShared";
 import {
   useDashboardStats,
   useTodaysAppointments,
@@ -48,25 +48,25 @@ export default function DashboardOverview({
   const scheduledPct = (appointments && appointments.length > 0) ? Math.round((scheduled.length / appointments.length) * 100) : 0;
 
   // Build stats cards based on role/permissions
-  const statCards: { iconClass: string; label: string; value: string | number; loading: boolean; isCircular?: boolean; pct?: number; totalValue?: number | string; sub?: string; }[] = [];
+  const statCards: { iconClass: string; label: string; value: string | number; loading: boolean; isCircular?: boolean; pct?: number; totalValue?: number | string; sub?: string; hasCalendar?: boolean; }[] = [];
 
   if (currentRole === "admin") {
     statCards.push(
       { iconClass: "fa-solid fa-user-injured", label: "Total Patients", value: stats?.totalPatients ?? "—", loading: statsLoading },
       { iconClass: "fa-solid fa-user-nurse", label: "Staff Members", value: stats?.staffMembers ?? "—", loading: statsLoading },
-      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, loading: aptsLoading },
+      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-shield-halved", label: "Roles Defined", value: stats?.rolesCount ?? "—", loading: statsLoading },
     );
   } else if (currentRole === "staff") {
     statCards.push(
       { iconClass: "fa-solid fa-calendar-check", label: "Today's Appointments", value: (todayApts ?? []).length, loading: todayLoading },
-      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, loading: aptsLoading },
+      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-clipboard-check", label: "Completed Today", value: (todayApts ?? []).filter((a) => a.status === "completed").length, loading: todayLoading },
     );
   } else {
     // patient or any custom role
     statCards.push(
-      { iconClass: "fa-solid fa-calendar-check", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, loading: aptsLoading },
+      { iconClass: "fa-solid fa-calendar-check", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, hasCalendar: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-clipboard-check", label: "Completed Visits", value: completedCount, loading: aptsLoading },
     );
   }
@@ -145,7 +145,11 @@ export default function DashboardOverview({
         <div style={{ flex: "2 1 0", minWidth: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14 }}>
             {statCards.map((s) => (
-              <StatCard key={s.label} {...s} />
+              s.hasCalendar ? (
+                <CalendarStatCard key={s.label} {...s} appointments={appointments ?? []} />
+              ) : (
+                <StatCard key={s.label} {...s} />
+              )
             ))}
           </div>
         </div>
