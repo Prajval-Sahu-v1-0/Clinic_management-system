@@ -44,10 +44,79 @@ export function Badge({ label, color, bg }: { label: string; color: string; bg: 
 }
 
 export function StatCard({
-  iconClass, label, value, sub, loading,
+  iconClass, label, value, sub, loading, isCircular, pct = 0, totalValue
 }: {
-  iconClass: string; label: string; value: string | number; sub?: string; loading?: boolean;
+  iconClass: string; label: string; value: string | number; sub?: string; loading?: boolean; isCircular?: boolean; pct?: number; totalValue?: number | string;
 }) {
+  if (isCircular) {
+    const radius = 32;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (circumference * pct) / 100;
+
+    return (
+      <div style={{
+        background: "var(--theme-card-bg)",
+        border: "1px solid var(--theme-card-border)",
+        borderRadius: 18,
+        padding: "24px 16px",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12,
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        boxShadow: "var(--theme-card-shadow)",
+        position: "relative", overflow: "hidden",
+        transition: "transform 0.2s, box-shadow 0.2s",
+      }}>
+        {/* Subtle glow accent */}
+        <div style={{
+          position: "absolute", top: -30, right: -30, width: 80, height: 80,
+          borderRadius: "50%", background: "rgba(58,143,122,0.1)", filter: "blur(20px)",
+          pointerEvents: "none",
+        }} />
+        
+        {loading ? (
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(90deg, var(--theme-border-soft) 25%, var(--theme-border) 50%, var(--theme-border-soft) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+        ) : (
+          <div style={{ position: "relative", width: 90, height: 90, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="90" height="90" viewBox="0 0 80 80" style={{ transform: "rotate(-90deg)" }}>
+              {/* Background ring */}
+              <circle
+                cx="40" cy="40" r={radius}
+                fill="none" stroke="var(--theme-border-soft)" strokeWidth="10"
+              />
+              {/* Progress ring */}
+              <circle
+                cx="40" cy="40" r={radius}
+                fill="none" stroke="url(#stat-grad)" strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                style={{ transition: "stroke-dashoffset 1s ease" }}
+              />
+              <defs>
+                <linearGradient id="stat-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#c9832a" />
+                  <stop offset="50%" stopColor="#56b89e" />
+                  <stop offset="100%" stopColor="#3A8F7A" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div style={{ position: "absolute", fontSize: 20, fontWeight: 700, color: "var(--theme-text1)", fontFamily: "'Inter', sans-serif" }}>
+              {pct}%
+            </div>
+          </div>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
+          <div style={{ fontSize: 13, color: "var(--theme-text2)", fontWeight: 500, opacity: 0.9 }}>{label}</div>
+          {!loading && totalValue !== undefined && (
+            <div style={{ fontSize: 11, color: "var(--theme-text3)", fontWeight: 500 }}>
+              {value} / {totalValue} Total
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       background: "var(--theme-card-bg)",

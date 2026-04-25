@@ -31,7 +31,6 @@ export default function DashboardOverview({
   const { data: todayApts, loading: todayLoading, error: todayError } = useTodaysAppointments();
   const { data: stats, loading: statsLoading } = useDashboardStats();
 
-  const upcoming = (appointments ?? []).filter((a) => a.status === "confirmed" || a.status === "pending");
   const activeRx = (prescriptions ?? []).filter((r) => r.status === "active");
   const completedCount = (appointments ?? []).filter((a) => a.status === "completed").length;
 
@@ -45,26 +44,29 @@ export default function DashboardOverview({
 
   const statusLabel = currentRole === "admin" ? "All systems live" : currentRole === "staff" ? "On duty" : "Portal active";
 
+  const scheduled = (appointments ?? []).filter((a) => a.status === "scheduled" || a.status === "confirmed" || a.status === "pending");
+  const scheduledPct = (appointments && appointments.length > 0) ? Math.round((scheduled.length / appointments.length) * 100) : 0;
+
   // Build stats cards based on role/permissions
-  const statCards: { iconClass: string; label: string; value: string | number; loading: boolean }[] = [];
+  const statCards: { iconClass: string; label: string; value: string | number; loading: boolean; isCircular?: boolean; pct?: number; totalValue?: number | string; sub?: string; }[] = [];
 
   if (currentRole === "admin") {
     statCards.push(
       { iconClass: "fa-solid fa-user-injured", label: "Total Patients", value: stats?.totalPatients ?? "—", loading: statsLoading },
       { iconClass: "fa-solid fa-user-nurse", label: "Staff Members", value: stats?.staffMembers ?? "—", loading: statsLoading },
-      { iconClass: "fa-solid fa-calendar-check", label: "Appointments Today", value: stats?.appointmentsToday ?? "—", loading: statsLoading },
+      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-shield-halved", label: "Roles Defined", value: stats?.rolesCount ?? "—", loading: statsLoading },
     );
   } else if (currentRole === "staff") {
     statCards.push(
       { iconClass: "fa-solid fa-calendar-check", label: "Today's Appointments", value: (todayApts ?? []).length, loading: todayLoading },
-      { iconClass: "fa-solid fa-clock", label: "Upcoming Appointments", value: upcoming.length, loading: aptsLoading },
+      { iconClass: "fa-solid fa-clock", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-clipboard-check", label: "Completed Today", value: (todayApts ?? []).filter((a) => a.status === "completed").length, loading: todayLoading },
     );
   } else {
     // patient or any custom role
     statCards.push(
-      { iconClass: "fa-solid fa-calendar-check", label: "Upcoming Appointments", value: upcoming.length, loading: aptsLoading },
+      { iconClass: "fa-solid fa-calendar-check", label: "Scheduled Appointments", value: scheduled.length, totalValue: (appointments ?? []).length, pct: scheduledPct, isCircular: true, loading: aptsLoading },
       { iconClass: "fa-solid fa-clipboard-check", label: "Completed Visits", value: completedCount, loading: aptsLoading },
     );
   }
@@ -143,7 +145,7 @@ export default function DashboardOverview({
         <div style={{ flex: "2 1 0", minWidth: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14 }}>
             {statCards.map((s) => (
-              <StatCard key={s.label} iconClass={s.iconClass} label={s.label} value={s.value} loading={s.loading} />
+              <StatCard key={s.label} {...s} />
             ))}
           </div>
         </div>
