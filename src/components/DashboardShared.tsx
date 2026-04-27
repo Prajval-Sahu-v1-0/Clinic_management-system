@@ -13,19 +13,19 @@ import { useTheme } from "@/hooks/useTheme";
 // Shared Constants
 
 export const statusColor: Record<string, string> = {
-  active: "#3A8F7A", inactive: "#A9D8C8", pending: "#C08A5A",
-  confirmed: "#3A8F7A", completed: "#3A8F7A", cancelled: "#dc2626",
-  expired: "#A9D8C8", refill: "#C08A5A", scheduled: "#C08A5A",
+  active: "#6F7AE6", inactive: "#A7B3FF", pending: "#F2A6C8",
+  confirmed: "#6F7AE6", completed: "#6F7AE6", cancelled: "#dc2626",
+  expired: "#A7B3FF", refill: "#F2A6C8", scheduled: "#F2A6C8",
 };
 
 export const statusBg: Record<string, string> = {
-  active: "rgba(58,143,122,0.15)", inactive: "rgba(169,216,200,0.1)", pending: "rgba(192,138,90,0.15)",
-  confirmed: "rgba(58,143,122,0.15)", completed: "rgba(58,143,122,0.15)", cancelled: "rgba(220,38,38,0.12)",
-  expired: "rgba(169,216,200,0.1)", refill: "rgba(192,138,90,0.15)", scheduled: "rgba(192,138,90,0.15)",
+  active: "rgba(111,122,230,0.15)", inactive: "rgba(167,179,255,0.1)", pending: "rgba(242,166,200,0.15)",
+  confirmed: "rgba(111,122,230,0.15)", completed: "rgba(111,122,230,0.15)", cancelled: "rgba(220,38,38,0.12)",
+  expired: "rgba(167,179,255,0.1)", refill: "rgba(242,166,200,0.15)", scheduled: "rgba(242,166,200,0.15)",
 };
 
 export const roleColor: Record<string, string> = {
-  admin: "#C08A5A", staff: "#3A8F7A", patient: "#A9D8C8",
+  admin: "#F2A6C8", staff: "#6F7AE6", patient: "#A7B3FF",
 };
 
 // Shared Small Components
@@ -842,13 +842,13 @@ export function DashboardLayout({
                     >
                       <span style={{
                         width: 6, height: 6, borderRadius: "50%",
-                        background: r === currentRole ? "var(--copper)" : "rgba(169,216,200,0.2)",
+                        background: r === currentRole ? "var(--copper)" : "rgba(167,179,255,0.2)",
                         flexShrink: 0,
                         boxShadow: r === currentRole ? "0 0 6px var(--copper-glow)" : "none",
                       }} />
                       {r}
                       {r === currentRole && (
-                        <i className="fa-solid fa-check" style={{ marginLeft: "auto", fontSize: 9, color: "#3A8F7A" }} />
+                        <i className="fa-solid fa-check" style={{ marginLeft: "auto", fontSize: 9, color: "var(--sage)" }} />
                       )}
                     </button>
                   ))}
@@ -878,7 +878,7 @@ export function DashboardLayout({
               <div style={{
                 width: 32, height: 32, borderRadius: 9,
                 background: meta.avatarGradient,
-                color: "#EDE3D1", display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--theme-icon-color)", display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 12, fontWeight: 700, flexShrink: 0,
                 position: "relative", overflow: "hidden",
               }}>
@@ -929,14 +929,14 @@ export function DashboardLayout({
         <main style={{
           flex: 1, display: "flex", flexDirection: "column", overflow: "hidden",
           background: isDark
-            ? "#0d3830"
-            : "url('/bg-light.gif') center no-repeat fixed, #DAD7C9",
+            ? "var(--theme-page-bg)"
+            : "url('/bg-light.gif') center/cover no-repeat, var(--theme-page-bg)",
         }}>
           {/* Header */}
           <header style={{
             padding: "0 24px", height: 60,
             borderBottom: `1px solid ${C.border}`,
-            background: isDark ? "#0a2e25" : "#EAE7DB",
+            background: "var(--theme-header-bg)",
             display: "flex", alignItems: "center", justifyContent: "space-between",
             flexShrink: 0,
             boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
@@ -954,7 +954,7 @@ export function DashboardLayout({
                   cursor: "pointer", transition: "all 0.15s", flexShrink: 0,
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(58,143,122,0.15)";
+                  (e.currentTarget as HTMLButtonElement).style.background = "var(--theme-btn-ghost-hover)";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.background = "none";
@@ -1000,7 +1000,7 @@ export function DashboardLayout({
                 <span style={{
                   position: "absolute", top: 8, right: 8, width: 5, height: 5,
                   borderRadius: "50%", background: "var(--theme-active-dot)",
-                  border: `1.5px solid ${isDark ? "#0a2e25" : "#EAE7DB"}`,
+                  border: `1.5px solid var(--theme-header-bg)`,
                   boxShadow: "0 0 6px var(--theme-active-dot-glow)",
                 }} />
               </button>

@@ -43,11 +43,11 @@ export default function Home() {
 
   const spinnerStyle: React.CSSProperties = {
     display: "flex", minHeight: "100vh", alignItems: "center",
-    justifyContent: "center", background: isDark ? "#0d3830" : "#EDE3D1",
+    justifyContent: "center", background: isDark ? "#0B0E27" : "#5C6FD1",
   };
   const spinEl = (
     <div style={spinnerStyle}>
-      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "4px solid rgba(58,143,122,0.3)", borderTopColor: "#3A8F7A", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "4px solid rgba(111,122,230,0.3)", borderTopColor: "#6F7AE6", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -93,12 +93,12 @@ export default function Home() {
         />
       ))}
 
-      {/* ── Overlay: darkened color wash so card stays legible ── */}
+      {/* ── Overlay: color wash so card stays legible ── */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 1,
         background: isDark
-          ? "linear-gradient(135deg, rgba(5,18,14,0.72) 0%, rgba(10,46,37,0.65) 100%)"
-          : "linear-gradient(135deg, rgba(10,46,37,0.55) 0%, rgba(20,78,66,0.45) 100%)",
+          ? "linear-gradient(135deg, rgba(11,14,39,0.72) 0%, rgba(31,37,84,0.65) 100%)"
+          : "linear-gradient(135deg, rgba(63,74,168,0.55) 0%, rgba(92,111,209,0.45) 100%)",
         backdropFilter: "blur(2px)",
       }} />
 

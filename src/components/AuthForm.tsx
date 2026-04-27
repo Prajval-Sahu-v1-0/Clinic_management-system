@@ -16,8 +16,8 @@ export default function AuthForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const tx1 = isDark ? "#EDE3D1" : "#144E42";
-  const tx2 = isDark ? "rgba(169,216,200,0.55)" : "rgba(20,78,66,0.55)";
+  const tx1 = isDark ? "var(--theme-text1)" : "var(--theme-text1)";
+  const tx2 = isDark ? "var(--theme-text2)" : "var(--theme-text2)";
 
   /* ── handlers ─────────────────────────────────────────────── */
   async function handleLogin(email: string, password: string) {
@@ -87,9 +87,9 @@ export default function AuthForm() {
       {/* ── Tab switcher ────────────────────────────────────── */}
       <div style={{
         display: "flex", gap: 0, marginBottom: 24,
-        background: isDark ? "rgba(20,78,66,0.5)" : "rgba(20,78,66,0.06)",
+        background: isDark ? "rgba(31,37,84,0.5)" : "rgba(111,122,230,0.06)",
         borderRadius: 12, padding: 4,
-        border: `1px solid ${isDark ? "rgba(169,216,200,0.1)" : "rgba(20,78,66,0.1)"}`,
+        border: `1px solid ${isDark ? "rgba(167,179,255,0.1)" : "rgba(111,122,230,0.15)"}`,
       }}>
         {(["signup", "login"] as Tab[]).map(tab => (
           <button
@@ -100,12 +100,12 @@ export default function AuthForm() {
               cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, fontWeight: 600,
               transition: "all 0.2s",
               background: activeTab === tab
-                ? "linear-gradient(135deg, #3A8F7A 0%, #144E42 100%)"
+                ? "linear-gradient(135deg, #6F7AE6 0%, #3F4AA8 100%)"
                 : "transparent",
               color: activeTab === tab
-                ? "#EDE3D1"
-                : isDark ? "rgba(169,216,200,0.55)" : "rgba(20,78,66,0.55)",
-              boxShadow: activeTab === tab ? "0 3px 10px rgba(58,143,122,0.3)" : "none",
+                ? "#E8ECFF"
+                : isDark ? "rgba(167,179,255,0.55)" : "rgba(111,122,230,0.65)",
+              boxShadow: activeTab === tab ? "0 3px 10px rgba(111,122,230,0.3)" : "none",
             }}
           >
             {tab === "login" ? "Sign In" : "Sign Up"}
@@ -124,9 +124,9 @@ export default function AuthForm() {
 
       {/* ── Divider ─────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "22px 0 18px" }}>
-        <div style={{ flex: 1, height: 1, background: isDark ? "rgba(169,216,200,0.1)" : "rgba(20,78,66,0.1)" }} />
+        <div style={{ flex: 1, height: 1, background: isDark ? "rgba(167,179,255,0.15)" : "rgba(111,122,230,0.12)" }} />
         <span style={{ fontSize: 11.5, color: tx2, fontWeight: 500 }}>Or {activeTab === "signup" ? "register" : "sign in"} with</span>
-        <div style={{ flex: 1, height: 1, background: isDark ? "rgba(169,216,200,0.1)" : "rgba(20,78,66,0.1)" }} />
+        <div style={{ flex: 1, height: 1, background: isDark ? "rgba(167,179,255,0.15)" : "rgba(111,122,230,0.12)" }} />
       </div>
 
       {/* ── Social buttons ──────────────────────────────────── */}
@@ -139,8 +139,8 @@ export default function AuthForm() {
           style={{
             flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             padding: "11px 16px", borderRadius: 11, cursor: "pointer",
-            background: isDark ? "rgba(20,78,66,0.4)" : "rgba(255,255,255,0.9)",
-            border: `1px solid ${isDark ? "rgba(169,216,200,0.14)" : "rgba(20,78,66,0.14)"}`,
+            background: isDark ? "rgba(31,37,84,0.4)" : "rgba(255,255,255,0.9)",
+            border: `1px solid ${isDark ? "rgba(167,179,255,0.14)" : "rgba(111,122,230,0.14)"}`,
             fontSize: 13.5, fontWeight: 600, color: tx1, transition: "all 0.2s",
             fontFamily: "inherit",
           }}
@@ -163,13 +163,13 @@ export default function AuthForm() {
           style={{
             flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             padding: "11px 16px", borderRadius: 11, cursor: "pointer",
-            background: isDark ? "rgba(20,78,66,0.4)" : "rgba(255,255,255,0.9)",
-            border: `1px solid ${isDark ? "rgba(169,216,200,0.14)" : "rgba(20,78,66,0.14)"}`,
+            background: isDark ? "rgba(31,37,84,0.4)" : "rgba(255,255,255,0.9)",
+            border: `1px solid ${isDark ? "rgba(167,179,255,0.14)" : "rgba(111,122,230,0.14)"}`,
             fontSize: 13.5, fontWeight: 600, color: tx1, transition: "all 0.2s",
             fontFamily: "inherit",
           }}
         >
-          <svg width="15" height="15" viewBox="0 0 814 1000" fill={isDark ? "#EDE3D1" : "#144E42"}>
+          <svg width="15" height="15" viewBox="0 0 814 1000" fill={isDark ? "#E8ECFF" : "#1F2554"}>
             <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-54.2-155.5-127.4C46 391.1 17.7 268.3 17.7 150.4c0-114.7 32-175.3 93.9-233.5C174 -50.8 253.7-82.2 328.2-82.2c113.3 0 194.8 72 264.4 72 72 0 165.3-78.3 247.5-78.3zm-190 -165.3c-32 24.3-68 55.3-68 117.3 0 59.6 28.5 111.5 78.3 145.4 8.8 5.8 17.1 8 25.3 8 14.7 0 29.4-8.4 40.8-23.1 20.7-25.6 39.5-65.1 39.5-117.3 0-54.2-23.1-104-69.5-135.6-13.5-9.2-27.6-14.7-41.5-14.7-1.3 0-3.2.4-4.9.0z"/>
           </svg>
           Apple

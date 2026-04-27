@@ -15,10 +15,10 @@ export default function LoginForm({ onLogin, error, loading, isDark }: LoginForm
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({});
 
-  const inputBg   = isDark ? "rgba(20,78,66,0.45)" : "rgba(20,78,66,0.04)";
-  const inputBorder = isDark ? "rgba(169,216,200,0.15)" : "rgba(20,78,66,0.15)";
-  const textColor = isDark ? "#EDE3D1" : "#144E42";
-  const placeholderColor = isDark ? "rgba(169,216,200,0.4)" : "rgba(20,78,66,0.4)";
+  const inputBg   = isDark ? "rgba(31,37,84,0.45)" : "rgba(111,122,230,0.04)";
+  const inputBorder = isDark ? "rgba(167,179,255,0.2)" : "rgba(111,122,230,0.2)";
+  const textColor = isDark ? "var(--theme-text1)" : "var(--theme-text1)";
+  const placeholderColor = isDark ? "rgba(167,179,255,0.4)" : "rgba(111,122,230,0.4)";
 
   const inputStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box",
@@ -106,7 +106,7 @@ export default function LoginForm({ onLogin, error, loading, isDark }: LoginForm
           onClick={() => alert("Password reset coming soon!")}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            fontSize: 12.5, fontWeight: 600, color: "#3A8F7A",
+            fontSize: 12.5, fontWeight: 600, color: "var(--sage)",
             fontFamily: "inherit", padding: 0,
           }}
         >
@@ -134,15 +134,15 @@ export default function LoginForm({ onLogin, error, loading, isDark }: LoginForm
         disabled={loading}
         style={{
           width: "100%", padding: "13px 0", borderRadius: 11, border: "none",
-          background: "linear-gradient(135deg, #3A8F7A 0%, #144E42 100%)",
-          color: "#EDE3D1", fontSize: 14.5, fontWeight: 700,
+          background: "linear-gradient(135deg, #6F7AE6 0%, #3F4AA8 100%)",
+          color: "#E8ECFF", fontSize: 14.5, fontWeight: 700,
           fontFamily: "inherit", cursor: loading ? "not-allowed" : "pointer",
           opacity: loading ? 0.7 : 1, transition: "all 0.2s",
-          boxShadow: "0 4px 16px rgba(58,143,122,0.35)",
+          boxShadow: "0 4px 16px rgba(111,122,230,0.35)",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
         }}
-        onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = "0 6px 22px rgba(58,143,122,0.5)"; }}
-        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(58,143,122,0.35)"; }}
+        onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = "0 6px 22px rgba(111,122,230,0.5)"; }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(111,122,230,0.35)"; }}
         onMouseDown={e => { if (!loading) e.currentTarget.style.transform = "scale(0.985)"; }}
         onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
       >

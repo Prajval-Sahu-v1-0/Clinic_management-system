@@ -242,20 +242,20 @@ export default function AccessRolePage() {
   const color = selRole ? rc(roles.indexOf(selRole)) : "#1a1a1a";
   const grouped = groupPerms(allPerms);
 
-  // Theme-aware colours — now using CSS variables from the new palette
+  // Theme-aware colours — using CSS variables from the new palette
   const C = {
-    pageBg:    isDark ? "#0d3830" : "#DAD7C9",
-    cardBg:    isDark ? "rgba(20,78,66,0.45)" : "rgba(255,255,255,0.85)",
-    headerBg:  isDark ? "#0a2e25" : "#EAE7DB",
-    sidebarBg: isDark ? "#0a2e25" : "#EAE7DB",
-    border:    isDark ? "rgba(169,216,200,0.1)" : "#B7C4C9",
-    borderSoft:isDark ? "rgba(169,216,200,0.06)" : "rgba(183,196,201,0.5)",
-    text1:     isDark ? "#EDE3D1" : "#2F3E46",
-    text2:     isDark ? "#A9D8C8" : "#4F7C8C",
-    text3:     isDark ? "rgba(169,216,200,0.5)" : "#6B7B83",
-    inputBg:   isDark ? "rgba(20,78,66,0.4)" : "rgba(255,255,255,0.8)",
-    rowHover:  isDark ? "rgba(58,143,122,0.08)" : "rgba(108,157,181,0.1)",
-    theadBg:   isDark ? "rgba(20,78,66,0.6)" : "rgba(218,215,201,0.8)",
+    pageBg:    "var(--theme-page-bg)",
+    cardBg:    "var(--theme-card-bg)",
+    headerBg:  "var(--theme-header-bg)",
+    sidebarBg: "var(--theme-sidebar-bg)",
+    border:    "var(--theme-border)",
+    borderSoft:"var(--theme-border-soft)",
+    text1:     "var(--theme-text1)",
+    text2:     "var(--theme-text2)",
+    text3:     "var(--theme-text3)",
+    inputBg:   "var(--theme-input-bg)",
+    rowHover:  "var(--theme-table-hover-bg)",
+    theadBg:   "var(--theme-table-header-bg)",
   };
 
   // Loading state
@@ -384,10 +384,10 @@ export default function AccessRolePage() {
         [data-theme="dark"] .ar-theme-btn:hover { background: #222222; }
       `}</style>
 
-      <div data-theme={isDark ? "dark" : "light"} style={{
+      <div style={{
         display: "flex", flexDirection: "column", height: "100vh",
-        background: C.pageBg, fontFamily: "'Inter',sans-serif",
-        color: C.text1, transition: "background 0.2s, color 0.2s",
+        background: "var(--theme-page-bg)", fontFamily: "'Inter',sans-serif",
+        color: "var(--theme-text1)", transition: "background 0.2s, color 0.2s",
       }}>
 
         {/* Header */}
@@ -423,9 +423,9 @@ export default function AccessRolePage() {
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {(["roles", "members"] as const).map(t => (
               <button key={t} onClick={() => setTab(t)} style={{
-                background: tab === t ? (isDark ? "#2a2a2a" : "#ffffff") : "transparent",
+                background: tab === t ? "var(--theme-card-bg)" : "transparent",
                 border: tab === t
-                  ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}`
+                  ? `1px solid var(--theme-border)`
                   : "1px solid transparent",
                 borderRadius: 10, padding: "6px 16px", fontSize: 13,
                 fontWeight: tab === t ? 700 : 500,
@@ -473,7 +473,9 @@ export default function AccessRolePage() {
               border: `1px solid ${C.border}`,
               borderRadius: 16,
               display: "flex", flexDirection: "column", overflow: "hidden",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
             }}>
               <div style={{ padding: "14px 16px 10px", borderBottom: `1px solid ${C.borderSoft}` }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: C.text3, textTransform: "uppercase", letterSpacing: "0.1em" }}>
@@ -486,10 +488,10 @@ export default function AccessRolePage() {
                   <button key={r.role_id} onClick={() => setSelRoleId(r.role_id)} style={{
                     width: "100%",
                     background: selRole?.role_id === r.role_id
-                      ? (isDark ? "#2a2a2a" : "#ffffff")
+                      ? "var(--theme-filter-active-bg)"
                       : "transparent",
                     border: selRole?.role_id === r.role_id
-                      ? `1px solid ${isDark ? "#333333" : "#e0e0e0"}`
+                      ? `1px solid var(--theme-border)`
                       : "1px solid transparent",
                     borderRadius: 10, padding: "10px 12px",
                     display: "flex", alignItems: "center", gap: 10,
@@ -548,14 +550,16 @@ export default function AccessRolePage() {
                 border: `1px solid ${C.border}`,
                 borderRadius: 16,
                 display: "flex", flexDirection: "column", overflow: "hidden",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
               }}>
                 {/* Editor Header */}
                 <div style={{
                   padding: "16px 24px",
                   borderBottom: `1px solid ${C.borderSoft}`,
                   display: "flex", alignItems: "center", gap: 14,
-                  background: isDark ? "#111111" : "#f8f8f8",
+                  background: "var(--theme-table-header-bg)",
                 }}>
                   <span style={{
                     width: 13, height: 13, borderRadius: "50%",
@@ -624,11 +628,12 @@ export default function AccessRolePage() {
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 padding: "11px 14px",
                                 background: on
-                                  ? (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)")
-                                  : (isDark ? "#111111" : "#f8f8f8"),
-                                border: `1px solid ${on
-                                  ? (isDark ? "#2a2a2a" : "#d0d0d0")
-                                  : (isDark ? "#1f1f1f" : "#efefef")}`,
+                                  ? "var(--theme-filter-active-bg)"
+                                  : "var(--theme-card-bg)",
+                                border: `1px solid ${
+                                  on
+                                    ? "var(--theme-border)"
+                                    : "var(--theme-border-soft)"}`,
                                 borderRadius: 10, cursor: "pointer", transition: "all 0.15s",
                               }}
                             >
@@ -698,7 +703,9 @@ export default function AccessRolePage() {
               background: C.cardBg,
               border: `1px solid ${C.border}`,
               borderRadius: 16, overflow: "hidden",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
             }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
@@ -789,8 +796,10 @@ export default function AccessRolePage() {
             onClick={e => e.stopPropagation()}
             style={{
               background: C.cardBg, borderRadius: 20, width: 440, maxWidth: "92vw",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.18)", overflow: "hidden",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden",
               border: `1px solid ${C.border}`,
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
             }}
           >
             {/* Modal header */}

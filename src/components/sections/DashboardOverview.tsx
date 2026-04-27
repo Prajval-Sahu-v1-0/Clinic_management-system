@@ -49,7 +49,7 @@ export default function DashboardOverview({
       .map(([name, count]) => ({
         name: name.charAt(0).toUpperCase() + name.slice(1),
         count,
-        color: name === "admin" ? "#C08A5A" : name === "staff" ? "#3A8F7A" : "#A9D8C8",
+        color: name === "admin" ? "#F2A6C8" : name === "staff" ? "#6F7AE6" : "#A7B3FF",
       }))
       .sort((a, b) => b.count - a.count);
   }, [users]);
@@ -158,14 +158,14 @@ export default function DashboardOverview({
       {/* Greeting */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#EDE3D1", margin: 0, fontFamily: "'Inter', sans-serif", letterSpacing: "-0.3px" }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--theme-text1)", margin: 0, fontFamily: "'Inter', sans-serif", letterSpacing: "-0.3px" }}>
             {greeting}
           </h2>
-          <p style={{ color: "#A9D8C8", margin: "4px 0 0", fontSize: 14, opacity: 0.7 }}>{subtitle}</p>
+          <p style={{ color: "var(--theme-text2)", margin: "4px 0 0", fontSize: 14, opacity: 0.7 }}>{subtitle}</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(20,78,66,0.5)", border: "1px solid rgba(169,216,200,0.1)", borderRadius: 10, padding: "8px 14px" }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#3A8F7A", display: "inline-block", boxShadow: "0 0 8px rgba(58,143,122,0.5)" }} />
-          <span style={{ fontSize: 12, color: "#A9D8C8", fontWeight: 600 }}>{statusLabel}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--theme-chip-bg)", border: "1px solid var(--theme-border-soft)", borderRadius: 10, padding: "8px 14px" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--sage)", display: "inline-block", boxShadow: "0 0 8px var(--sage-glow)" }} />
+          <span style={{ fontSize: 12, color: "var(--theme-text2)", fontWeight: 600 }}>{statusLabel}</span>
         </div>
       </div>
 
@@ -191,7 +191,7 @@ export default function DashboardOverview({
                   position: "relative", overflow: "hidden",
                 }}>
                   {/* Glow */}
-                  <div style={{ position: "absolute", top: -30, right: -30, width: 80, height: 80, borderRadius: "50%", background: "rgba(58,143,122,0.15)", filter: "blur(20px)", pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", top: -30, right: -30, width: 80, height: 80, borderRadius: "50%", background: "var(--sage-glow)", filter: "blur(20px)", pointerEvents: "none" }} />
 
                   {/* Header: icon + label on top row */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -243,7 +243,7 @@ export default function DashboardOverview({
                   position: "relative", overflow: "hidden",
                 }}>
                   {/* Glow */}
-                  <div style={{ position: "absolute", top: -30, right: -30, width: 80, height: 80, borderRadius: "50%", background: "rgba(58,143,122,0.15)", filter: "blur(20px)", pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", top: -30, right: -30, width: 80, height: 80, borderRadius: "50%", background: "var(--sage-glow)", filter: "blur(20px)", pointerEvents: "none" }} />
 
                   {/* Icon + label */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
