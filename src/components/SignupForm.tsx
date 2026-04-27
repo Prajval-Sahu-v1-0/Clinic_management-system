@@ -15,15 +15,15 @@ export default function SignupForm({ onSignup, error, loading, isDark }: SignupF
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{
     firstName?: string; lastName?: string;
-    email?: string; password?: string; terms?: string;
-  }>({});
+    email?: string; password?: string;
+  }>({}); 
 
-  const inputBg     = isDark ? "rgba(20,78,66,0.45)" : "rgba(20,78,66,0.04)";
-  const inputBorder = isDark ? "rgba(169,216,200,0.15)" : "rgba(20,78,66,0.15)";
-  const textColor   = isDark ? "#EDE3D1" : "#144E42";
+  const inputBg     = isDark ? "rgba(43,47,69,0.55)" : "rgba(111,122,230,0.04)";
+  const inputBorder = isDark ? "rgba(74,80,112,0.6)" : "rgba(111,122,230,0.2)";
+  const textColor   = isDark ? "var(--theme-text1)" : "var(--theme-text1)";
+  const eyeColor    = isDark ? "rgba(165,171,200,0.5)" : "rgba(111,122,230,0.45)";
 
   const inputStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box",
@@ -43,7 +43,6 @@ export default function SignupForm({ onSignup, error, loading, isDark }: SignupF
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Please enter a valid email";
     if (!password) errors.password = "Password is required";
     else if (password.length < 6) errors.password = "At least 6 characters";
-    if (!agreedToTerms) errors.terms = "You must agree to the Terms & Conditions";
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -116,7 +115,7 @@ export default function SignupForm({ onSignup, error, loading, isDark }: SignupF
             style={{
               position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
               background: "none", border: "none", cursor: "pointer", padding: 2,
-              color: isDark ? "rgba(169,216,200,0.45)" : "rgba(20,78,66,0.45)",
+              color: eyeColor,
               display: "flex", alignItems: "center",
             }}
           >
@@ -133,41 +132,6 @@ export default function SignupForm({ onSignup, error, loading, isDark }: SignupF
           </button>
         </div>
         {validationErrors.password && <p style={{ margin: "4px 0 0", fontSize: 11.5, color: "#dc2626" }}>{validationErrors.password}</p>}
-      </div>
-
-      {/* Terms checkbox */}
-      <div>
-        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-          <div
-            onClick={() => { setAgreedToTerms(!agreedToTerms); if (validationErrors.terms) setValidationErrors(v => ({ ...v, terms: undefined })); }}
-            style={{
-              width: 17, height: 17, borderRadius: 4, flexShrink: 0,
-              border: `2px solid ${agreedToTerms ? "#3A8F7A" : (validationErrors.terms ? "#dc2626" : inputBorder)}`,
-              background: agreedToTerms ? "#3A8F7A" : "transparent",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.15s", cursor: "pointer",
-            }}
-          >
-            {agreedToTerms && (
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="#EDE3D1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </div>
-          <span style={{ fontSize: 12.5, color: isDark ? "rgba(169,216,200,0.65)" : "rgba(20,78,66,0.65)", lineHeight: 1.4 }}>
-            I agree to the{" "}
-            <a
-              href="#"
-              onClick={e => e.preventDefault()}
-              style={{ color: "#3A8F7A", fontWeight: 600, textDecoration: "none" }}
-              onMouseEnter={e => { e.currentTarget.style.textDecoration = "underline"; }}
-              onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; }}
-            >
-              Terms &amp; Conditions
-            </a>
-          </span>
-        </label>
-        {validationErrors.terms && <p style={{ margin: "4px 0 0", fontSize: 11.5, color: "#dc2626" }}>{validationErrors.terms}</p>}
       </div>
 
       {/* Error */}
@@ -190,16 +154,21 @@ export default function SignupForm({ onSignup, error, loading, isDark }: SignupF
         disabled={loading}
         style={{
           width: "100%", padding: "13px 0", borderRadius: 11, border: "none",
-          background: "linear-gradient(135deg, #3A8F7A 0%, #144E42 100%)",
-          color: "#EDE3D1", fontSize: 14.5, fontWeight: 700,
+          background: isDark
+            ? "linear-gradient(135deg, #6C7A9E 0%, #3A3F5A 100%)"
+            : "linear-gradient(135deg, #6F7AE6 0%, #3F4AA8 100%)",
+          color: isDark ? "#FFFFFF" : "#E8ECFF",
+          fontSize: 14.5, fontWeight: 700,
           fontFamily: "inherit", cursor: loading ? "not-allowed" : "pointer",
           opacity: loading ? 0.7 : 1, transition: "all 0.2s",
-          boxShadow: "0 4px 16px rgba(58,143,122,0.35)",
+          boxShadow: isDark
+            ? "0 4px 16px rgba(108,122,158,0.4)"
+            : "0 4px 16px rgba(111,122,230,0.35)",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           marginTop: 2,
         }}
-        onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = "0 6px 22px rgba(58,143,122,0.5)"; }}
-        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(58,143,122,0.35)"; }}
+        onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = isDark ? "0 6px 22px rgba(108,122,158,0.55)" : "0 6px 22px rgba(111,122,230,0.5)"; }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = isDark ? "0 4px 16px rgba(108,122,158,0.4)" : "0 4px 16px rgba(111,122,230,0.35)"; }}
         onMouseDown={e => { if (!loading) e.currentTarget.style.transform = "scale(0.985)"; }}
         onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
       >
