@@ -585,10 +585,7 @@ export function DashboardLayout({
         <aside style={{
           width: SW,
           flexShrink: 0,
-          backgroundImage: isDark ? "url('/dashboard-bg.jpg')" : "url('/light-dasboard-bg.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          background: C.sidebarBg,
           display: "flex", flexDirection: "column",
           padding: "0 0 16px",
           overflow: "hidden",
