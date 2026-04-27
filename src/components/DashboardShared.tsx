@@ -212,12 +212,12 @@ export function CalendarStatCard({
 
   return (
     <div style={{
-      gridColumn: "1 / -1", // Will span the entire row functionally, or explicitly span logic depending on grid setup
+      gridColumn: "1 / -1",
       background: "var(--theme-card-bg)",
       border: "1px solid var(--theme-card-border)",
       borderRadius: 18,
       padding: "20px",
-      display: "flex", gap: 24, alignItems: "stretch",
+      display: "flex", gap: 24, alignItems: "stretch", flexWrap: "wrap",
       backdropFilter: "blur(12px)",
       WebkitBackdropFilter: "blur(12px)",
       boxShadow: "var(--theme-card-shadow)",
@@ -270,7 +270,7 @@ export function CalendarStatCard({
       </div>
 
       {/* Right side: Mini Calendar */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div className="dash-calendar-wrap" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 260 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: "var(--theme-text1)", display: "flex", alignItems: "center", gap: 6 }}>
             <i className="fa-regular fa-calendar-days" style={{ color: "var(--sage)", fontSize: 13 }} />
@@ -374,6 +374,41 @@ export function ActionButton({
     >
       {children}
     </button>
+  );
+}
+
+// Mobile Action Menu — ⋯ dropdown for table rows on narrow screens
+export function MobileActionMenu({ actions }: { actions: { label: string; icon: string; danger?: boolean; onClick?: () => void }[] }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  return (
+    <div className="mobile-action-menu" ref={ref}>
+      <button className="mobile-action-menu-btn" onClick={() => setOpen(!open)}>
+        <i className="fa-solid fa-ellipsis-vertical" />
+      </button>
+      {open && (
+        <div className="mobile-action-dropdown">
+          {actions.map((a) => (
+            <button
+              key={a.label}
+              className={a.danger ? "danger" : ""}
+              onClick={() => { setOpen(false); a.onClick?.(); }}
+            >
+              <i className={a.icon} style={{ fontSize: 12, width: 14 }} />
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -531,6 +566,20 @@ export function DashboardLayout({
   const { isDark, toggleTheme } = useTheme();
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) setIsCollapsed(false);
+      if (!mobile) setMobileOpen(false);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const permissions = getPermissions(session);
   const userRoles: string[] = session?.user?.roles ?? [session?.user?.role ?? "patient"];
@@ -542,7 +591,7 @@ export function DashboardLayout({
   const hasPermission = (perm: string) => permissions.includes(perm);
   const visibleNav = navItems.filter(n => !n.requiredPermission || hasPermission(n.requiredPermission));
 
-  const SW = isCollapsed ? 68 : 230;
+  const SW = isMobile ? 260 : (isCollapsed ? 68 : 230);
 
   // Nature palette (always dark-first aesthetic)
   const C = {
@@ -574,6 +623,9 @@ export function DashboardLayout({
     <>
       <style>{DARK_MODE_CSS}</style>
 
+      {/* Mobile backdrop */}
+      <div className={`sidebar-backdrop ${mobileOpen ? "open" : ""}`} onClick={() => setMobileOpen(false)} />
+
       <div
         style={{
           display: "flex", height: "100vh", overflow: "hidden",
@@ -581,16 +633,18 @@ export function DashboardLayout({
         }}
       >
         {/* Sidebar */}
-        <aside style={{
-          width: SW,
-          flexShrink: 0,
-          background: C.sidebarBg,
-          display: "flex", flexDirection: "column",
-          padding: "0 0 16px",
-          overflow: "hidden",
-          position: "relative",
-          transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
-        }}>
+        <aside
+          className={`dash-sidebar ${mobileOpen ? "open" : ""}`}
+          style={{
+            width: isMobile ? 260 : SW,
+            flexShrink: 0,
+            background: C.sidebarBg,
+            display: "flex", flexDirection: "column",
+            padding: "0 0 16px",
+            overflow: "hidden",
+            position: isMobile ? "fixed" : "relative",
+            transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
+          }}>
           {/* Sidebar overlay so nav text stays legible */}
           <div style={{
             position: "absolute", inset: 0,
@@ -727,6 +781,7 @@ export function DashboardLayout({
                         } else {
                           onSectionChange(n.id);
                         }
+                        if (isMobile) setMobileOpen(false);
                       }}
                       style={{
                         display: "flex",
@@ -944,8 +999,8 @@ export function DashboardLayout({
             {/* Left: hamburger toggle + breadcrumb */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                onClick={() => isMobile ? setMobileOpen(!mobileOpen) : setIsCollapsed(!isCollapsed)}
+                title={isMobile ? "Open menu" : (isCollapsed ? "Expand sidebar" : "Collapse sidebar")}
                 style={{
                   background: "none",
                   border: `1px solid ${C.border}`,
@@ -977,12 +1032,12 @@ export function DashboardLayout({
 
             {/* Right: Actions */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ fontSize: 12, color: C.text3, display: "flex", alignItems: "center", gap: 5 }}>
+              <div className="dash-header-date" style={{ fontSize: 12, color: C.text3, display: "flex", alignItems: "center", gap: 5 }}>
                 <i className="fa-regular fa-calendar" style={{ fontSize: 11, color: C.copper }} />
                 {new Date().toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
               </div>
 
-              <div style={{ width: 1, height: 20, background: C.border }} />
+              <div className="dash-header-divider" style={{ width: 1, height: 20, background: C.border }} />
 
               <button onClick={toggleTheme} className="dash-theme-toggle" title={isDark ? "Light mode" : "Dark mode"}>
                 {isDark
@@ -1034,7 +1089,7 @@ export function DashboardLayout({
           </header>
 
           {/* Scrollable content */}
-          <div style={{
+          <div className="dash-content-padding" style={{
             flex: 1, overflowY: "auto", padding: "26px 28px",
             background: "transparent",
             color: C.text1,

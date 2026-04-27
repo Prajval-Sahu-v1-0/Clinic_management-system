@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Badge, ActionButton, ErrorMessage } from "@/components/DashboardShared";
+import { Badge, ActionButton, MobileActionMenu, ErrorMessage } from "@/components/DashboardShared";
 import { useInventory, useMedicines } from "@/hooks/useAdminData";
 import { T } from "./themeTokens";
 
@@ -84,7 +84,7 @@ export default function InventorySection() {
 
       {error && <ErrorMessage message={error} />}
 
-      <div style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
+      <div className="responsive-table-wrap" style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.tableRowBorder}`, background: T.tableHeaderBg }}>
@@ -154,9 +154,16 @@ export default function InventorySection() {
                       <Badge label={s.label} color={s.color} bg={s.bg} />
                     </td>
                     <td style={{ padding: "14px 18px" }}>
-                      <ActionButton variant="danger" onClick={() => handleRemove(item.inventory_id, item.medicine?.medicine_id)}>
-                        <i className="fa-solid fa-trash" style={{ fontSize: 11 }} /> Remove
-                      </ActionButton>
+                      <div className="desktop-actions">
+                        <ActionButton variant="danger" onClick={() => handleRemove(item.inventory_id, item.medicine?.medicine_id)}>
+                          <i className="fa-solid fa-trash" style={{ fontSize: 11 }} /> Remove
+                        </ActionButton>
+                      </div>
+                      <div className="mobile-actions" style={{ display: "none" }}>
+                        <MobileActionMenu actions={[
+                          { label: "Remove", icon: "fa-solid fa-trash", danger: true, onClick: () => handleRemove(item.inventory_id, item.medicine?.medicine_id) },
+                        ]} />
+                      </div>
                     </td>
                   </tr>
                 );

@@ -2,7 +2,7 @@
 
 import { useState, Fragment, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Badge, ActionButton, LoadingRows, ErrorMessage, statusColor, statusBg } from "@/components/DashboardShared";
+import { Badge, ActionButton, MobileActionMenu, LoadingRows, ErrorMessage, statusColor, statusBg } from "@/components/DashboardShared";
 import { useAppointments, usePatients, useDoctors } from "@/hooks/useAdminData";
 import { resolvePatientId } from "@/hooks/adminQueries";
 import { T } from "./themeTokens";
@@ -215,8 +215,8 @@ export default function AppointmentsSection({ permissions }: { permissions: stri
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 6, background: T.filterBg, padding: 4, borderRadius: 8, border: `1px solid ${T.cardBorder}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+        <div className="tab-scroll" style={{ display: "flex", gap: 6, background: T.filterBg, padding: 4, borderRadius: 8, border: `1px solid ${T.cardBorder}` }}>
           {["All", "Pending", "Upcoming", "Done", "Cancelled"].map(f => (
             <button
               key={f}
@@ -248,7 +248,7 @@ export default function AppointmentsSection({ permissions }: { permissions: stri
 
       {error && <ErrorMessage message={error} />}
 
-      <div style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
+      <div className="responsive-table-wrap" style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.tableRowBorder}`, background: T.tableHeaderBg }}>
@@ -283,7 +283,7 @@ export default function AppointmentsSection({ permissions }: { permissions: stri
                   </td>
                   {canCancel && (
                     <td style={{ padding: "14px 18px" }}>
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div className="desktop-actions" style={{ display: "flex", gap: 6 }}>
                         <ActionButton
                           variant="primary"
                           onClick={() => setConfirmAction({ show: true, id: apt.id, action: "done", patient: apt.patient })}
@@ -307,6 +307,16 @@ export default function AppointmentsSection({ permissions }: { permissions: stri
                         >
                           <i className="fa-solid fa-ban" style={{ fontSize: 11 }} /> Cancel
                         </ActionButton>
+                      </div>
+                      <div className="mobile-actions" style={{ display: "none" }}>
+                        <MobileActionMenu actions={[
+                          { label: "Done", icon: "fa-solid fa-check", onClick: () => setConfirmAction({ show: true, id: apt.id, action: "done", patient: apt.patient }) },
+                          { label: "Change time", icon: "fa-solid fa-clock", onClick: () => {
+                            openActionTimeHelper(apt.time);
+                            setConfirmAction({ show: true, id: apt.id, action: "time", date: apt.date, time: apt.time, patient: apt.patient });
+                          }},
+                          { label: "Cancel", icon: "fa-solid fa-ban", danger: true, onClick: () => setConfirmAction({ show: true, id: apt.id, action: "cancel", patient: apt.patient }) },
+                        ]} />
                       </div>
                     </td>
                   )}

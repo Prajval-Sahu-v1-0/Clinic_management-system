@@ -192,7 +192,7 @@ export default function Home() {
       }} />
 
       {/* ── Outer card ── */}
-      <div style={{
+      <div className="login-card-outer" style={{
         position: "relative", zIndex: 2,
         display: "flex", width: "100%", maxWidth: 920, minHeight: 560,
         borderRadius: 24, overflow: "hidden",
@@ -203,11 +203,11 @@ export default function Home() {
         {/* ═══════════════════════════════════
             LEFT PANEL — hero + brand
             ═══════════════════════════════════ */}
-        <div style={{
+        <div className="login-left-panel" style={{
           position: "relative", width: "42%", minWidth: 300, flexShrink: 0,
           background: P.leftBg,
           overflow: "hidden", display: "flex", flexDirection: "column",
-        }} className="hidden lg:flex">
+        }}>
 
           {/* Ambient blobs */}
           <div style={{ position: "absolute", top: "-10%", left: "-15%", width: 320, height: 320, borderRadius: "50%", background: P.blob1, filter: "blur(60px)", pointerEvents: "none" }} />
@@ -327,7 +327,7 @@ export default function Home() {
         {/* ═══════════════════════════════════
             RIGHT PANEL — auth form
             ═══════════════════════════════════ */}
-        <div style={{
+        <div className="login-right-panel" style={{
           flex: 1, display: "flex", flexDirection: "column", justifyContent: "center",
           padding: "48px 48px",
           background: P.rightBg,

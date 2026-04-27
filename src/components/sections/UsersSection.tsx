@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Badge, ActionButton, LoadingRows, ErrorMessage, statusColor, statusBg, roleColor } from "@/components/DashboardShared";
+import { Badge, ActionButton, MobileActionMenu, LoadingRows, ErrorMessage, statusColor, statusBg, roleColor } from "@/components/DashboardShared";
 import { useUsers } from "@/hooks/useAdminData";
 import type { User } from "@/hooks/types";
 import { T } from "./themeTokens";
@@ -81,7 +81,7 @@ export default function UsersSection() {
       {actionErr && <ErrorMessage message={actionErr} />}
       {error && <ErrorMessage message={error} />}
 
-      <div style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
+      <div className="responsive-table-wrap" style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.tableRowBorder}`, background: T.tableHeaderBg }}>
@@ -125,7 +125,7 @@ export default function UsersSection() {
                   </td>
                   <td style={{ padding: "14px 18px", fontSize: 13, color: T.text3 }}>{u.joined}</td>
                   <td style={{ padding: "14px 18px" }}>
-                    <div style={{ display: "flex", gap: 6 }}>
+                    <div className="desktop-actions" style={{ display: "flex", gap: 6 }}>
                       <ActionButton onClick={() => openEdit(u)}>
                         <i className="fa-solid fa-pen-to-square" style={{ fontSize: 11 }} /> Edit
                       </ActionButton>
@@ -140,6 +140,17 @@ export default function UsersSection() {
                       >
                         <i className="fa-solid fa-trash" style={{ fontSize: 11 }} /> Delete
                       </ActionButton>
+                    </div>
+                    <div className="mobile-actions" style={{ display: "none" }}>
+                      <MobileActionMenu actions={[
+                        { label: "Edit", icon: "fa-solid fa-pen-to-square", onClick: () => openEdit(u) },
+                        { label: "Delete", icon: "fa-solid fa-trash", danger: true, onClick: () => {
+                          setActionErr("");
+                          setDeletingEntity(u);
+                          setAuthChallenge(false);
+                          setAuthInput("");
+                        }},
+                      ]} />
                     </div>
                   </td>
                 </tr>

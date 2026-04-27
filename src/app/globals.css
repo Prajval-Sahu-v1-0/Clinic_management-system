@@ -362,3 +362,193 @@ body {
   border-color: var(--sage);
   box-shadow: 0 0 0 3px var(--sage-glow);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN SYSTEM
+═══════════════════════════════════════════════════════════ */
+
+/* ── Scrollable table wrapper ─────────────────────────────── */
+.responsive-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Mobile action menu ───────────────────────────────────── */
+.mobile-action-menu {
+  position: relative;
+  display: inline-flex;
+}
+.mobile-action-menu-btn {
+  background: var(--theme-filter-bg);
+  border: 1px solid var(--theme-border-soft);
+  border-radius: 8px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px;
+  color: var(--theme-text2);
+  transition: all 0.15s;
+}
+.mobile-action-menu-btn:hover {
+  background: var(--theme-filter-active-bg);
+}
+.mobile-action-dropdown {
+  position: absolute;
+  right: 0; top: 100%;
+  margin-top: 4px;
+  background: var(--theme-modal-bg);
+  border: 1px solid var(--theme-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  z-index: 50;
+  min-width: 140px;
+  padding: 4px;
+  backdrop-filter: blur(12px);
+}
+.mobile-action-dropdown button {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none; background: none;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  color: var(--theme-text2);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: left;
+}
+.mobile-action-dropdown button:hover {
+  background: var(--theme-filter-active-bg);
+}
+.mobile-action-dropdown button.danger {
+  color: var(--theme-danger-color);
+}
+
+/* ── Sidebar overlay backdrop (mobile) ────────────────────── */
+.sidebar-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.sidebar-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Tablet (≤1024px) ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dash-content-padding {
+    padding: 20px 16px !important;
+  }
+  .dash-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .dash-header-date {
+    display: none !important;
+  }
+  .dash-header-divider {
+    display: none !important;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Sidebar becomes off-canvas */
+  .dash-sidebar {
+    position: fixed !important;
+    left: 0; top: 0; bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+    width: 260px !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+  }
+  .dash-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Content adapts to full width */
+  .dash-content-padding {
+    padding: 16px 12px !important;
+  }
+
+  /* Stat grid → single column */
+  .dash-stat-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Profile cards → full width stack */
+  .profile-top-row {
+    flex-direction: column !important;
+  }
+  .profile-top-row > * {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Appointment row → stack on narrow screens */
+  .appt-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .appt-row > div {
+    min-width: 45% !important;
+  }
+
+  /* Tab buttons → scrollable */
+  .tab-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+  }
+
+  /* Hide desktop action buttons, show mobile menu */
+  .desktop-actions {
+    display: none !important;
+  }
+  .mobile-actions {
+    display: flex !important;
+  }
+
+  /* Login card → full width, no radius */
+  .login-card-outer {
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    min-height: 100vh !important;
+  }
+  .login-left-panel {
+    display: none !important;
+  }
+  .login-right-panel {
+    padding: 32px 20px !important;
+  }
+
+  /* Header breadcrumb secondary text hidden */
+  .dash-breadcrumb-sub {
+    display: none !important;
+  }
+
+  /* Calendar fit */
+  .dash-calendar-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dash-calendar-wrap > * {
+    min-width: 280px;
+  }
+}
+
+/* ── Small phones (≤480px) ────────────────────────────────── */
+@media (max-width: 480px) {
+  .login-right-panel {
+    padding: 24px 16px !important;
+  }
+  .dash-content-padding {
+    padding: 12px 8px !important;
+  }
+}

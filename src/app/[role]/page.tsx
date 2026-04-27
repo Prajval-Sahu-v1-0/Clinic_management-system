@@ -29,7 +29,7 @@ const ALL_NAV: NavItem[] = [
   { id: "prescriptions", icon: "fa-solid fa-pills",            label: "Prescriptions",   requiredPermission: "view_prescriptions" },
   { id: "inventory",     icon: "fa-solid fa-boxes-stacked",    label: "Inventory",       requiredPermission: "manage_inventory" },
   { id: "audit",         icon: "fa-solid fa-clock-rotate-left",label: "Audit Logs",      requiredPermission: "view_audit_logs" },
-  { id: "profile",       icon: "fa-solid fa-gear",             label: "Settings" },
+  { id: "profile",       icon: "fa-solid fa-circle-user",       label: "Profile" },
 ];
 
 const SECTION_TITLES: Record<string, string> = {
@@ -41,7 +41,7 @@ const SECTION_TITLES: Record<string, string> = {
   prescriptions: "Prescriptions",
   inventory:     "Inventory",
   audit:         "Audit Logs",
-  profile:       "Profile & Settings",
+  profile:       "Profile",
 };
 
 // ─── Page Component ───────────────────────────────────────────────────────────

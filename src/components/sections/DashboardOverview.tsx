@@ -170,11 +170,11 @@ export default function DashboardOverview({
       </div>
 
       {/* ── Stat Cards + Prescriptions Widget row ─────────────────────────── */}
-      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
 
         {/* Stat cards column */}
         <div style={{ flex: "2 1 0", minWidth: 0 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14 }}>
+          <div className="dash-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14 }}>
             {statCards.map((s) =>
               s.hasCalendar ? (
                 <CalendarStatCard key={s.label} {...s} appointments={appointments ?? []} />

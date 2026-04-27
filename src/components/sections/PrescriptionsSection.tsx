@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, ActionButton, LoadingRows, ErrorMessage, statusColor, statusBg } from "@/components/DashboardShared";
+import { Badge, ActionButton, MobileActionMenu, LoadingRows, ErrorMessage, statusColor, statusBg } from "@/components/DashboardShared";
 import { usePrescriptions, usePatients, useDoctors } from "@/hooks/useAdminData";
 import { T } from "./themeTokens";
 
@@ -80,7 +80,7 @@ export default function PrescriptionsSection({ permissions }: { permissions: str
 
       {error && <ErrorMessage message={error} />}
 
-      <div style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
+      <div className="responsive-table-wrap" style={{ background: T.tableBg, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: T.cardShadow, backdropFilter: "blur(8px)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.tableRowBorder}`, background: T.tableHeaderBg }}>
@@ -125,7 +125,7 @@ export default function PrescriptionsSection({ permissions }: { permissions: str
                     <Badge label={rx.status} color={statusColor[rx.status] ?? T.text2} bg={statusBg[rx.status] ?? T.chipBg} />
                   </td>
                   <td style={{ padding: "14px 18px" }}>
-                    <div style={{ display: "flex", gap: 6 }}>
+                    <div className="desktop-actions" style={{ display: "flex", gap: 6 }}>
                       <ActionButton><i className="fa-solid fa-eye" style={{ fontSize: 11 }} /> View</ActionButton>
                       <ActionButton
                         variant="primary"
@@ -142,6 +142,13 @@ export default function PrescriptionsSection({ permissions }: { permissions: str
                           <i className="fa-solid fa-trash-can" style={{ fontSize: 11 }} /> Remove
                         </ActionButton>
                       )}
+                    </div>
+                    <div className="mobile-actions" style={{ display: "none" }}>
+                      <MobileActionMenu actions={[
+                        { label: "View", icon: "fa-solid fa-eye" },
+                        { label: "Renew", icon: "fa-solid fa-arrow-rotate-right", onClick: () => setRenewTarget({ id: rx.id, medication: rx.medication }) },
+                        ...(canWrite ? [{ label: "Remove", icon: "fa-solid fa-trash-can", danger: true, onClick: () => setDeleteTarget({ id: rx.id, medication: rx.medication }) }] : []),
+                      ]} />
                     </div>
                   </td>
                 </tr>
