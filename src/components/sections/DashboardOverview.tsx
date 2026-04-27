@@ -146,11 +146,11 @@ export default function DashboardOverview({
     })
     .sort((a, b) => b.pct - a.pct); // most-progressed first
 
-  // Progress bar colour: green → amber → red
+  // Progress bar colour: sky-blue → amber → pink (light palette)
   function barColor(pct: number) {
-    if (pct < 60) return "linear-gradient(90deg, #3A8F7A, #56b89e)";
+    if (pct < 60) return "linear-gradient(90deg, var(--sage), var(--sage-light))";
     if (pct < 85) return "linear-gradient(90deg, #c9832a, #e0a847)";
-    return "linear-gradient(90deg, #c94040, #e05c5c)";
+    return "linear-gradient(90deg, var(--copper), var(--copper-light))";
   }
 
   return (
@@ -195,8 +195,8 @@ export default function DashboardOverview({
 
                   {/* Header: icon + label on top row */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px rgba(58,143,122,0.3)" }}>
-                      <i className="fa-solid fa-user-nurse" style={{ color: "#EDE3D1", fontSize: 15 }} />
+                    <div style={{ width: 38, height: 38, borderRadius: 11, background: "var(--theme-icon-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px var(--sage-glow)" }}>
+                      <i className="fa-solid fa-user-nurse" style={{ color: "var(--theme-icon-color)", fontSize: 15 }} />
                     </div>
                     <div style={{ fontSize: 12, color: "var(--theme-text2)", fontWeight: 500 }}>{s.label}</div>
                   </div>
@@ -247,8 +247,8 @@ export default function DashboardOverview({
 
                   {/* Icon + label */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px rgba(58,143,122,0.3)" }}>
-                      <i className="fa-solid fa-user-injured" style={{ color: "#EDE3D1", fontSize: 15 }} />
+                    <div style={{ width: 38, height: 38, borderRadius: 11, background: "var(--theme-icon-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px var(--sage-glow)" }}>
+                      <i className="fa-solid fa-user-injured" style={{ color: "var(--theme-icon-color)", fontSize: 15 }} />
                     </div>
                     <div style={{ fontSize: 12, color: "var(--theme-text2)", fontWeight: 500 }}>{s.label}</div>
                   </div>
@@ -301,11 +301,11 @@ export default function DashboardOverview({
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{
                   width: 22, height: 22, borderRadius: 6,
-                  background: "linear-gradient(135deg, #3A8F7A, #144E42)",
+                  background: "var(--theme-icon-bg)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: "0 2px 8px rgba(58,143,122,0.35)",
+                  boxShadow: "0 2px 8px var(--sage-glow)",
                 }}>
-                  <i className="fa-solid fa-pills" style={{ color: "#EDE3D1", fontSize: 9 }} />
+                  <i className="fa-solid fa-pills" style={{ color: "var(--theme-icon-color)", fontSize: 9 }} />
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "var(--theme-text3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                   Ongoing Rx
@@ -458,8 +458,8 @@ export default function DashboardOverview({
                 (e.currentTarget as HTMLButtonElement).style.background = "var(--theme-card-bg)";
               }}
             >
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(58,143,122,0.3)" }}>
-                <i className={a.icon} style={{ fontSize: 12, color: "#EDE3D1" }} />
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--theme-icon-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px var(--sage-glow)" }}>
+                <i className={a.icon} style={{ fontSize: 12, color: "var(--theme-icon-color)" }} />
               </div>
               {a.label}
             </button>
@@ -503,8 +503,8 @@ export default function DashboardOverview({
                   onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.background = "var(--theme-table-hover-bg)"}
                   onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.background = "transparent"}
                 >
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #3A8F7A, #144E42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 10px rgba(58,143,122,0.2)" }}>
-                    <i className="fa-solid fa-clipboard-list" style={{ color: "#EDE3D1", fontSize: 14 }} />
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--theme-icon-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 10px var(--sage-glow)" }}>
+                    <i className="fa-solid fa-clipboard-list" style={{ color: "var(--theme-icon-color)", fontSize: 14 }} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 14, color: "var(--theme-text1)" }}>{currentRole === "patient" ? apt.doctor : apt.patient}</div>

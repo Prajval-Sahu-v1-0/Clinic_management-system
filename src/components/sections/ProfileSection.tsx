@@ -143,10 +143,10 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
             onClick={() => fileInputRef.current?.click()}
             style={{
               width: 90, height: 90, borderRadius: 20,
-              background: "linear-gradient(135deg, #3A8F7A, #144E42)",
-              color: "#EDE3D1", display: "flex", alignItems: "center",
+              background: "var(--theme-icon-bg)",
+              color: "var(--theme-icon-color)", display: "flex", alignItems: "center",
               justifyContent: "center", fontSize: 28, fontWeight: 700,
-              boxShadow: "0 8px 24px rgba(58,143,122,0.35)",
+              boxShadow: "0 8px 24px var(--sage-glow)",
               overflow: "hidden", cursor: "pointer", position: "relative",
               transition: "opacity 0.2s",
             }}
@@ -207,10 +207,10 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
             { label: "Sign Out of All Sessions", icon: "fa-solid fa-right-from-bracket", danger: true, onClick: () => signOut({ callbackUrl: "/" }) },
           ].map((item) => (
             <button key={item.label} onClick={item.onClick} style={{
-              background: item.danger ? T.dangerBg : "rgba(20,78,66,0.4)",
+              background: item.danger ? T.dangerBg : "var(--theme-btn-secondary-bg)",
               border: `1px solid ${item.danger ? T.dangerBorder : T.cardBorder}`,
               borderRadius: 9, padding: "12px 16px",
-              color: item.danger ? "#f87171" : T.text2,
+              color: item.danger ? "var(--theme-btn-danger-text)" : T.text2,
               fontSize: 13, fontWeight: 600, cursor: "pointer",
               textAlign: "left", fontFamily: "inherit",
               display: "flex", alignItems: "center", gap: 10,
@@ -219,17 +219,17 @@ export default function ProfileSection({ currentRole }: { currentRole: string })
               onMouseEnter={(e) => {
                 if (!item.danger) {
                   (e.currentTarget as HTMLButtonElement).style.background = T.tableHoverBg;
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(58,143,122,0.25)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--theme-border)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!item.danger) {
-                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(20,78,66,0.4)";
+                  (e.currentTarget as HTMLButtonElement).style.background = "var(--theme-btn-secondary-bg)";
                   (e.currentTarget as HTMLButtonElement).style.borderColor = T.cardBorder;
                 }
               }}
             >
-              <i className={item.icon} style={{ fontSize: 14, width: 16, color: item.danger ? "#f87171" : T.text3 }} />
+              <i className={item.icon} style={{ fontSize: 14, width: 16, color: item.danger ? "var(--theme-btn-danger-text)" : T.text3 }} />
               {item.label}
             </button>
           ))}

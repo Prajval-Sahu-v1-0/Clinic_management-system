@@ -66,9 +66,9 @@ function Btn({ children, variant = "secondary", onClick, disabled, style }: {
   onClick?: () => void; disabled?: boolean; style?: React.CSSProperties;
 }) {
   const s: Record<string, React.CSSProperties> = {
-    primary:   { background: "#1a1a1a", color: "#fff", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" },
-    secondary: { background: "#fff", color: "#333333", border: "1px solid #e0e0e0" },
-    danger:    { background: "#fff", color: "#dc2626", border: "1px solid #fee2e2" },
+    primary:   { background: "var(--theme-btn-primary-bg)", color: "var(--theme-btn-primary-text)", border: "none", boxShadow: "0 2px 8px var(--sage-glow)" },
+    secondary: { background: "var(--theme-btn-secondary-bg)", color: "var(--theme-btn-secondary-text)", border: "1px solid var(--theme-btn-secondary-border)" },
+    danger:    { background: "var(--theme-btn-danger-bg)", color: "var(--theme-btn-danger-text)", border: "none" },
   };
   return (
     <button onClick={onClick} disabled={disabled} style={{
@@ -84,7 +84,7 @@ function Toggle({ on, color, onClick }: { on: boolean; color: string; onClick: (
   return (
     <div onClick={onClick} style={{
       width: 38, height: 21, borderRadius: 11,
-      background: on ? color : "#d0d0d0",
+      background: on ? "var(--theme-btn-primary-bg)" : "var(--theme-btn-secondary-border)",
       position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0,
     }}>
       <div style={{
@@ -242,27 +242,27 @@ export default function AccessRolePage() {
   const color = selRole ? rc(roles.indexOf(selRole)) : "#1a1a1a";
   const grouped = groupPerms(allPerms);
 
-  // Theme-aware colours
+  // Theme-aware colours — now using CSS variables from the new palette
   const C = {
-    pageBg:    isDark ? "#0a0a0a" : "#f0f0f0",
-    cardBg:    isDark ? "#1c1c1c" : "#ffffff",
-    headerBg:  isDark ? "#1c1c1c" : "#ffffff",
-    sidebarBg: isDark ? "#141414" : "#f8f8f8",
-    border:    isDark ? "#2a2a2a" : "#e8e8e8",
-    borderSoft:isDark ? "#1f1f1f" : "#efefef",
-    text1:     isDark ? "#ebebeb" : "#111111",
-    text2:     isDark ? "#aaaaaa" : "#555555",
-    text3:     isDark ? "#666666" : "#888888",
-    inputBg:   isDark ? "#1c1c1c" : "#ffffff",
-    rowHover:  isDark ? "#1f1f1f" : "#f8f8f8",
-    theadBg:   isDark ? "#111111" : "#f8f8f8",
+    pageBg:    isDark ? "#0d3830" : "#DAD7C9",
+    cardBg:    isDark ? "rgba(20,78,66,0.45)" : "rgba(255,255,255,0.85)",
+    headerBg:  isDark ? "#0a2e25" : "#EAE7DB",
+    sidebarBg: isDark ? "#0a2e25" : "#EAE7DB",
+    border:    isDark ? "rgba(169,216,200,0.1)" : "#B7C4C9",
+    borderSoft:isDark ? "rgba(169,216,200,0.06)" : "rgba(183,196,201,0.5)",
+    text1:     isDark ? "#EDE3D1" : "#2F3E46",
+    text2:     isDark ? "#A9D8C8" : "#4F7C8C",
+    text3:     isDark ? "rgba(169,216,200,0.5)" : "#6B7B83",
+    inputBg:   isDark ? "rgba(20,78,66,0.4)" : "rgba(255,255,255,0.8)",
+    rowHover:  isDark ? "rgba(58,143,122,0.08)" : "rgba(108,157,181,0.1)",
+    theadBg:   isDark ? "rgba(20,78,66,0.6)" : "rgba(218,215,201,0.8)",
   };
 
   // Loading state
   if (loading || sessionStatus === "loading") return (
     <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: C.pageBg, fontFamily: "'Inter',sans-serif" }}>
       <div style={{ textAlign: "center", color: C.text3 }}>
-        <i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 28, marginBottom: 12, display: "block", color: "#1a1a1a" }} />
+        <i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 28, marginBottom: 12, display: "block", color: "var(--sage)" }} />
         Loading Access &amp; Roles…
       </div>
     </div>
@@ -605,10 +605,10 @@ export default function AccessRolePage() {
                       }}>
                         <div style={{
                           width: 20, height: 20, borderRadius: 5,
-                          background: "#1a1a1a",
+                          background: "var(--theme-icon-bg)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                          <i className="fa-solid fa-layer-group" style={{ color: "#fff", fontSize: 9 }} />
+                          <i className="fa-solid fa-layer-group" style={{ color: "var(--theme-icon-color)", fontSize: 9 }} />
                         </div>
                         {cat}
                       </div>
@@ -728,8 +728,8 @@ export default function AccessRolePage() {
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <div style={{
                             width: 34, height: 34, borderRadius: 9,
-                            background: "#1a1a1a",
-                            color: "#fff",
+                            background: "var(--theme-icon-bg)",
+                            color: "var(--theme-icon-color)",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             fontSize: 12, fontWeight: 700,
                           }}>

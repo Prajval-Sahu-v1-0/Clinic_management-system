@@ -3,7 +3,129 @@
 
 /* ── Nature Palette CSS Variables ────────────────────────── */
 :root {
-  /* Common Palette */
+  /* LIGHT MODE (New Palette: Cool Blues + Lavender + Soft Pink + Moonlight White) */
+  --forest: #3F4AA8;
+  --forest-deep: #1F2554;
+  --forest-light: #5A629A;
+  --sage: #6F7AE6; 
+  --sage-light: #A7B3FF;
+  --sage-glow: rgba(111, 122, 230, 0.25);
+  --mint: #C9D4FF;
+  --mint-soft: rgba(201, 212, 255, 0.15);
+  --cream: #E8ECFF;
+  --cream-soft: rgba(232, 236, 255, 0.7);
+  --copper: #F2A6C8;
+  --copper-glow: rgba(242, 166, 200, 0.3);
+  --copper-light: #E594B7;
+
+  --theme-page-bg: #5C6FD1;
+  --theme-sidebar-bg: #3F4AA8;
+  --theme-sidebar-border: #4A56B5;
+  --theme-card-bg: #E8ECFF;
+  --theme-header-bg: #3F4AA8;
+  --theme-border: #C9D4FF;
+  --theme-border-soft: rgba(201, 212, 255, 0.5);
+  
+  --theme-text1: #1F2554;
+  --theme-text2: #5A629A;
+  --theme-text3: #A7B3FF;
+  --theme-text-label: #5A629A;
+
+  --theme-user-card-bg: rgba(232, 236, 255, 0.6);
+
+  --theme-table-bg: #E8ECFF;
+  --theme-table-header-bg: #C9D4FF;
+  --theme-table-row-border: #C9D4FF;
+  --theme-table-hover-bg: rgba(111, 122, 230, 0.1);
+
+  --theme-modal-overlay: rgba(31, 37, 84, 0.4);
+  --theme-modal-bg: #E8ECFF;
+  --theme-modal-border: #C9D4FF;
+  --theme-modal-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+  --theme-modal-header-border: #C9D4FF;
+  --theme-modal-footer-bg: rgba(201, 212, 255, 0.5);
+
+  --theme-input-bg: rgba(255, 255, 255, 0.8);
+  --theme-input-border: #C9D4FF;
+
+  --theme-filter-bg: #ffffff;
+  --theme-filter-active-bg: rgba(111, 122, 230, 0.15);
+  --theme-filter-active-color: #1F2554;
+  --theme-filter-inactive-color: #5A629A;
+
+  --theme-chip-bg: rgba(111, 122, 230, 0.1);
+  --theme-chip-color: #6F7AE6;
+
+  --theme-success-bg: rgba(111, 122, 230, 0.15);
+  --theme-success-border: rgba(111, 122, 230, 0.25);
+  --theme-success-color: #6F7AE6;
+
+  --theme-info-bg: rgba(167, 179, 255, 0.1);
+  --theme-info-border: rgba(167, 179, 255, 0.2);
+  --theme-info-color: #6F7AE6;
+
+  --theme-danger-bg: rgba(242, 166, 200, 0.15);
+  --theme-danger-border: rgba(242, 166, 200, 0.25);
+  --theme-danger-color: #F2A6C8;
+
+  --theme-avatar-bg: rgba(111, 122, 230, 0.15);
+  --theme-avatar-border: rgba(111, 122, 230, 0.25);
+  --theme-avatar-color: #3F4AA8;
+  
+  --theme-close-btn-hover: rgba(31, 37, 84, 0.08);
+  --theme-search-icon: #A7B3FF;
+
+  --theme-pag-bg: rgba(232, 236, 255, 0.6);
+  --theme-pag-border: #C9D4FF;
+  --theme-pag-disabled-bg: rgba(201, 212, 255, 0.3);
+  --theme-pag-disabled-color: rgba(167, 179, 255, 0.5);
+  --theme-pag-active-color: #1F2554;
+  
+  --theme-sidebar-overlay: rgba(63, 74, 168, 0.85);
+
+  /* ── Icon system ── */
+  --theme-icon-bg: linear-gradient(135deg, #6F7AE6, #3F4AA8);
+  --theme-icon-color: #E8ECFF;
+  --theme-icon-default: #A7B3FF;
+  --theme-icon-active: #6F7AE6;
+  --theme-icon-muted: #C9D4FF;
+  --theme-icon-highlight: #F2A6C8;
+
+  /* ── Button system ── */
+  /* Primary */
+  --theme-btn-primary-bg: #6F7AE6;
+  --theme-btn-primary-text: #FFFFFF;
+  --theme-btn-primary-hover: #5D68D4;
+  --theme-btn-primary-active: #4C57C2;
+  --theme-btn-primary-focus: #C9D4FF;
+  /* Secondary */
+  --theme-btn-secondary-bg: #E8ECFF;
+  --theme-btn-secondary-text: #1F2554;
+  --theme-btn-secondary-border: #C9D4FF;
+  --theme-btn-secondary-hover: #DCE2FF;
+  --theme-btn-secondary-active: #C9D4FF;
+  /* Accent / CTA */
+  --theme-btn-accent-bg: #F2A6C8;
+  --theme-btn-accent-text: #1F2554;
+  --theme-btn-accent-hover: #E594B7;
+  --theme-btn-accent-active: #D983A4;
+  /* Ghost */
+  --theme-btn-ghost-text: #A7B3FF;
+  --theme-btn-ghost-hover: rgba(167, 179, 255, 0.15);
+  --theme-btn-ghost-active: rgba(167, 179, 255, 0.25);
+  /* Destructive */
+  --theme-btn-danger-bg: #E594B7;
+  --theme-btn-danger-text: #FFFFFF;
+  --theme-btn-danger-hover: #D983A4;
+
+  /* Active state dot / highlight */
+  --theme-active-dot: #F2A6C8;
+  --theme-active-dot-glow: rgba(242, 166, 200, 0.4);
+  --theme-nav-active-icon-bg: linear-gradient(135deg, #6F7AE6, #3F4AA8);
+}
+
+.dark {
+  /* DARK MODE Base Palette (Original Nature Palette) */
   --forest: #144E42;
   --forest-deep: #0d3830;
   --forest-light: #1a5f50;
@@ -18,74 +140,6 @@
   --copper-glow: rgba(192, 138, 90, 0.3);
   --copper-light: #d4a373;
 
-  /* LIGHT MODE (Cream background) */
-  --theme-page-bg: #EDE3D1;
-  --theme-sidebar-bg: rgba(237, 227, 209, 0.45);
-  --theme-sidebar-border: rgba(20, 78, 66, 0.1);
-  --theme-card-bg: #ffffff;
-  --theme-header-bg: rgba(237, 227, 209, 0.85);
-  --theme-border: rgba(20, 78, 66, 0.15);
-  --theme-border-soft: rgba(20, 78, 66, 0.08);
-  
-  --theme-text1: #144E42;
-  --theme-text2: #3A8F7A;
-  --theme-text3: rgba(20, 78, 66, 0.65);
-  --theme-text-label: #3A8F7A;
-
-  --theme-user-card-bg: rgba(255, 255, 255, 0.5);
-
-  --theme-table-bg: #ffffff;
-  --theme-table-header-bg: rgba(237, 227, 209, 0.8);
-  --theme-table-row-border: rgba(20, 78, 66, 0.08);
-  --theme-table-hover-bg: rgba(58, 143, 122, 0.08);
-
-  --theme-modal-overlay: rgba(20, 78, 66, 0.3);
-  --theme-modal-bg: #ffffff;
-  --theme-modal-border: rgba(20, 78, 66, 0.12);
-  --theme-modal-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-  --theme-modal-header-border: rgba(20, 78, 66, 0.08);
-  --theme-modal-footer-bg: rgba(237, 227, 209, 0.5);
-
-  --theme-input-bg: rgba(255, 255, 255, 0.8);
-  --theme-input-border: rgba(20, 78, 66, 0.2);
-
-  --theme-filter-bg: #ffffff;
-  --theme-filter-active-bg: rgba(58, 143, 122, 0.15);
-  --theme-filter-active-color: #144E42;
-  --theme-filter-inactive-color: rgba(20, 78, 66, 0.6);
-
-  --theme-chip-bg: rgba(58, 143, 122, 0.1);
-  --theme-chip-color: #3A8F7A;
-
-  --theme-success-bg: rgba(58, 143, 122, 0.15);
-  --theme-success-border: rgba(58, 143, 122, 0.25);
-  --theme-success-color: #3A8F7A;
-
-  --theme-info-bg: rgba(58, 143, 122, 0.1);
-  --theme-info-border: rgba(58, 143, 122, 0.2);
-  --theme-info-color: #3A8F7A;
-
-  --theme-danger-bg: rgba(220, 38, 38, 0.1);
-  --theme-danger-border: rgba(220, 38, 38, 0.15);
-  --theme-danger-color: #dc2626;
-
-  --theme-avatar-bg: rgba(58, 143, 122, 0.15);
-  --theme-avatar-border: rgba(58, 143, 122, 0.25);
-  --theme-avatar-color: #144E42;
-  
-  --theme-close-btn-hover: rgba(20, 78, 66, 0.08);
-  --theme-search-icon: rgba(20, 78, 66, 0.4);
-
-  --theme-pag-bg: rgba(255, 255, 255, 0.6);
-  --theme-pag-border: rgba(20, 78, 66, 0.15);
-  --theme-pag-disabled-bg: rgba(20, 78, 66, 0.05);
-  --theme-pag-disabled-color: rgba(20, 78, 66, 0.3);
-  --theme-pag-active-color: #144E42;
-  
-  --theme-sidebar-overlay: rgba(237, 227, 209, 0.85);
-}
-
-.dark {
   /* DARK MODE (Jade/Forest background) */
   --theme-page-bg: #0d3830;
   --theme-sidebar-bg: #0a2e25;
@@ -151,6 +205,40 @@
   --theme-pag-active-color: #EDE3D1;
   
   --theme-sidebar-overlay: rgba(10, 46, 37, 0.88);
+
+  /* ── Icon system (dark) ── */
+  --theme-icon-bg: linear-gradient(135deg, #3A8F7A, #144E42);
+  --theme-icon-color: #EDE3D1;
+  --theme-icon-default: #3A8F7A;
+  --theme-icon-active: #A9D8C8;
+  --theme-icon-muted: rgba(169, 216, 200, 0.35);
+  --theme-icon-highlight: #C08A5A;
+
+  /* ── Button system (dark) ── */
+  --theme-btn-primary-bg: #3A8F7A;
+  --theme-btn-primary-text: #EDE3D1;
+  --theme-btn-primary-hover: #4da88f;
+  --theme-btn-primary-active: #144E42;
+  --theme-btn-primary-focus: rgba(58, 143, 122, 0.4);
+  --theme-btn-secondary-bg: rgba(20, 78, 66, 0.45);
+  --theme-btn-secondary-text: #A9D8C8;
+  --theme-btn-secondary-border: rgba(169, 216, 200, 0.1);
+  --theme-btn-secondary-hover: rgba(58, 143, 122, 0.15);
+  --theme-btn-secondary-active: rgba(58, 143, 122, 0.25);
+  --theme-btn-accent-bg: #C08A5A;
+  --theme-btn-accent-text: #EDE3D1;
+  --theme-btn-accent-hover: #d4a373;
+  --theme-btn-accent-active: #a87244;
+  --theme-btn-ghost-text: #A9D8C8;
+  --theme-btn-ghost-hover: rgba(169, 216, 200, 0.08);
+  --theme-btn-ghost-active: rgba(169, 216, 200, 0.15);
+  --theme-btn-danger-bg: rgba(220, 38, 38, 0.2);
+  --theme-btn-danger-text: #f87171;
+  --theme-btn-danger-hover: rgba(220, 38, 38, 0.3);
+
+  --theme-active-dot: #C08A5A;
+  --theme-active-dot-glow: rgba(192, 138, 90, 0.5);
+  --theme-nav-active-icon-bg: linear-gradient(135deg, #3A8F7A, #144E42);
 }
 
 /* ── Custom animations ─────────────────────────────────────── */
@@ -249,6 +337,7 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: transparent;
 }
 
 /* ── Glassmorphism card utility ────────────────────────────── */

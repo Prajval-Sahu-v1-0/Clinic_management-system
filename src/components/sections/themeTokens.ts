@@ -73,9 +73,9 @@ export const T = {
   avatarBorder: "var(--theme-avatar-border)",
   avatarColor: "var(--theme-avatar-color)",
   
-  // Pill icon bg (hardcoded to look good in both)
-  iconBg: "linear-gradient(135deg, #3A8F7A, #144E42)",
-  iconColor: "#EDE3D1",
+  // Pill icon bg — now uses CSS variable so it adapts between light and dark
+  iconBg: "var(--theme-icon-bg)",
+  iconColor: "var(--theme-icon-color)",
   
   // Close button hover
   closeBtnHover: "var(--theme-close-btn-hover)",

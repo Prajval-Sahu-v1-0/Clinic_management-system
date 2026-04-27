@@ -90,9 +90,9 @@ export default function RoleDashboardPage() {
   // Loading state
   if (status === "loading") {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#0d3830", fontFamily: "'Inter', sans-serif" }}>
-        <div style={{ textAlign: "center", color: "rgba(169,216,200,0.5)" }}>
-          <i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 28, marginBottom: 12, display: "block", color: "#3A8F7A" }} />
+      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "var(--theme-page-bg)", fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ textAlign: "center", color: "var(--theme-text3)" }}>
+          <i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: 28, marginBottom: 12, display: "block", color: "var(--sage)" }} />
           Loading dashboard…
         </div>
       </div>

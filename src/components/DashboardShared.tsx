@@ -69,7 +69,7 @@ export function StatCard({
         {/* Subtle glow accent */}
         <div style={{
           position: "absolute", top: -30, right: -30, width: 80, height: 80,
-          borderRadius: "50%", background: "rgba(58,143,122,0.1)", filter: "blur(20px)",
+          borderRadius: "50%", background: "var(--sage-glow)", filter: "blur(20px)",
           pointerEvents: "none",
         }} />
 
@@ -94,9 +94,9 @@ export function StatCard({
               />
               <defs>
                 <linearGradient id="stat-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#c9832a" />
-                  <stop offset="50%" stopColor="#56b89e" />
-                  <stop offset="100%" stopColor="#3A8F7A" />
+                  <stop offset="0%" stopColor="var(--copper)" />
+                  <stop offset="50%" stopColor="var(--sage-light)" />
+                  <stop offset="100%" stopColor="var(--sage)" />
                 </linearGradient>
               </defs>
             </svg>
@@ -133,17 +133,17 @@ export function StatCard({
       {/* Subtle glow accent */}
       <div style={{
         position: "absolute", top: -30, right: -30, width: 80, height: 80,
-        borderRadius: "50%", background: "rgba(58,143,122,0.15)", filter: "blur(20px)",
+        borderRadius: "50%", background: "var(--sage-glow)", filter: "blur(20px)",
         pointerEvents: "none",
       }} />
       <div style={{
         width: 44, height: 44, borderRadius: 13,
-        background: "linear-gradient(135deg, #3A8F7A, #144E42)",
+        background: "var(--theme-icon-bg)",
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
-        boxShadow: "0 4px 12px rgba(58,143,122,0.3)",
+        boxShadow: "0 4px 12px var(--sage-glow)",
       }}>
-        <i className={iconClass} style={{ color: "#EDE3D1", fontSize: 17 }} />
+        <i className={iconClass} style={{ color: "var(--theme-icon-color)", fontSize: 17 }} />
       </div>
       <div>
         {loading ? (
@@ -227,7 +227,7 @@ export function CalendarStatCard({
       {/* Subtle glow accent */}
       <div style={{
         position: "absolute", top: -30, right: -30, width: 120, height: 120,
-        borderRadius: "50%", background: "rgba(58,143,122,0.1)", filter: "blur(20px)",
+        borderRadius: "50%", background: "var(--sage-glow)", filter: "blur(20px)",
         pointerEvents: "none",
       }} />
 
@@ -242,15 +242,15 @@ export function CalendarStatCard({
             <svg width="90" height="90" viewBox="0 0 80 80" style={{ transform: "rotate(-90deg)" }}>
               <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--theme-border-soft)" strokeWidth="10" />
               <circle
-                cx="40" cy="40" r={radius} fill="none" stroke="url(#stat-grad)" strokeWidth="10"
+                cx="40" cy="40" r={radius} fill="none" stroke="url(#stat-grad2)" strokeWidth="10"
                 strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
                 style={{ transition: "stroke-dashoffset 1s ease" }}
               />
               <defs>
-                <linearGradient id="stat-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#c9832a" />
-                  <stop offset="50%" stopColor="#56b89e" />
-                  <stop offset="100%" stopColor="#3A8F7A" />
+                <linearGradient id="stat-grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="var(--copper)" />
+                  <stop offset="50%" stopColor="var(--sage-light)" />
+                  <stop offset="100%" stopColor="var(--sage)" />
                 </linearGradient>
               </defs>
             </svg>
@@ -304,15 +304,15 @@ export function CalendarStatCard({
                 height: 36, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 borderRadius: 6,
                 background: today
-                  ? "linear-gradient(135deg, #3A8F7A, #144E42)"
-                  : (marked ? "rgba(58,143,122,0.12)" : "transparent"),
-                border: marked && !today ? "1px solid rgba(58,143,122,0.3)" : "1px solid transparent",
+                  ? "var(--theme-nav-active-icon-bg)"
+                  : (marked ? "var(--theme-filter-active-bg)" : "transparent"),
+                border: marked && !today ? "1px solid var(--theme-border)" : "1px solid transparent",
                 position: "relative",
               }}>
                 <div style={{
                   fontSize: 11,
                   fontWeight: marked || today ? 600 : 400,
-                  color: today ? "#EDE3D1" : (marked ? "var(--sage)" : "var(--theme-text2)"),
+                  color: today ? "var(--theme-icon-color)" : (marked ? "var(--sage)" : "var(--theme-text2)"),
                 }}>
                   {day}
                 </div>
@@ -343,20 +343,20 @@ export function ActionButton({
 }) {
   const styles: Record<string, React.CSSProperties> = {
     primary: {
-      background: "linear-gradient(135deg, var(--sage), var(--forest-light))",
-      color: "var(--cream)",
-      border: "1px solid var(--theme-border)",
+      background: "var(--theme-btn-primary-bg)",
+      color: "var(--theme-btn-primary-text)",
+      border: "1px solid var(--theme-btn-primary-bg)",
       boxShadow: "0 4px 14px var(--sage-glow)",
     },
     secondary: {
-      background: "var(--theme-card-bg)",
-      color: "var(--theme-text2)",
-      border: "1px solid var(--theme-border)",
+      background: "var(--theme-btn-secondary-bg)",
+      color: "var(--theme-btn-secondary-text)",
+      border: "1px solid var(--theme-btn-secondary-border)",
     },
     danger: {
-      background: "var(--theme-danger-bg)",
-      color: "var(--theme-danger-color)",
-      border: "1px solid var(--theme-danger-border)",
+      background: "var(--theme-btn-danger-bg)",
+      color: "var(--theme-btn-danger-text)",
+      border: "none",
     },
   };
   return (
@@ -443,16 +443,16 @@ interface RoleMeta {
 }
 
 const ROLE_META: Record<string, RoleMeta> = {
-  admin: { icon: "fa-solid fa-shield-halved", portalLabel: "Admin Portal", avatarGradient: "linear-gradient(135deg, #144E42, #3A8F7A)" },
-  staff: { icon: "fa-solid fa-stethoscope", portalLabel: "Staff Portal", avatarGradient: "linear-gradient(135deg, #144E42, #3A8F7A)" },
-  patient: { icon: "fa-solid fa-heart-pulse", portalLabel: "Patient Portal", avatarGradient: "linear-gradient(135deg, #3A8F7A, #A9D8C8)" },
+  admin: { icon: "fa-solid fa-shield-halved", portalLabel: "Admin Portal", avatarGradient: "var(--theme-icon-bg)" },
+  staff: { icon: "fa-solid fa-stethoscope", portalLabel: "Staff Portal", avatarGradient: "var(--theme-icon-bg)" },
+  patient: { icon: "fa-solid fa-heart-pulse", portalLabel: "Patient Portal", avatarGradient: "var(--theme-icon-bg)" },
 };
 
 function getRoleMeta(role: string): RoleMeta {
   return ROLE_META[role] ?? {
     icon: "fa-solid fa-gauge-high",
     portalLabel: `${role.charAt(0).toUpperCase() + role.slice(1)} Portal`,
-    avatarGradient: "linear-gradient(135deg, #144E42, #3A8F7A)",
+    avatarGradient: "var(--theme-icon-bg)",
   };
 }
 
@@ -577,8 +577,7 @@ export function DashboardLayout({
       <div
         style={{
           display: "flex", height: "100vh", overflow: "hidden",
-          background: C.pageBg,
-          colorScheme: "dark",
+          background: "transparent",
         }}
       >
         {/* Sidebar */}
@@ -615,15 +614,15 @@ export function DashboardLayout({
               <div
                 style={{
                   width: 40, height: 40, borderRadius: 12,
-                  background: "linear-gradient(135deg, #3A8F7A, #144E42)",
+                  background: "var(--theme-icon-bg)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   flexShrink: 0, cursor: "pointer",
-                  boxShadow: "0 4px 14px rgba(58,143,122,0.3)",
+                  boxShadow: "0 4px 14px var(--sage-glow)",
                 }}
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
-                <i className={meta.icon} style={{ color: "#EDE3D1", fontSize: 16 }} />
+                <i className={meta.icon} style={{ color: "var(--theme-icon-color)", fontSize: 16 }} />
               </div>
 
               {/* Brand text */}
@@ -659,7 +658,7 @@ export function DashboardLayout({
                     color: C.text3, transition: "all 0.15s",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(58,143,122,0.15)";
+                    (e.currentTarget as HTMLButtonElement).style.background = "var(--theme-btn-ghost-hover)";
                     (e.currentTarget as HTMLButtonElement).style.color = C.text1;
                   }}
                   onMouseLeave={(e) => {
@@ -690,9 +689,7 @@ export function DashboardLayout({
             {/* Nav items */}
             <nav style={{
               padding: "10px",
-              background: !isDark ? "rgba(142, 151, 110, 0.15)" : "rgba(78, 45, 24, 0.15)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              background: !isDark ? "rgba(108,157,181,0.08)" : "rgba(20,78,66,0.15)",
               display: "flex", flexDirection: "column",
               overflow: "visible",
             }}>
@@ -768,14 +765,14 @@ export function DashboardLayout({
                     >
                       <div style={{
                         width: 28, height: 28, borderRadius: 8,
-                        background: isActive ? "linear-gradient(135deg, #3A8F7A, #144E42)" : "rgba(169,216,200,0.08)",
+                        background: isActive ? "var(--theme-nav-active-icon-bg)" : "var(--theme-btn-ghost-hover)",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         transition: "all 0.15s", flexShrink: 0,
-                        boxShadow: isActive ? "0 4px 10px rgba(58,143,122,0.25)" : "none",
+                        boxShadow: isActive ? "0 4px 10px var(--sage-glow)" : "none",
                       }}>
                         <i
                           className={n.icon}
-                          style={{ fontSize: 12, color: isActive ? "#EDE3D1" : C.sidebarText3 }}
+                          style={{ fontSize: 12, color: isActive ? "var(--theme-icon-color)" : "var(--theme-icon-default)" }}
                         />
                       </div>
                       {!isCollapsed && (
@@ -784,8 +781,8 @@ export function DashboardLayout({
                           {isActive && (
                             <div style={{
                               marginLeft: "auto", width: 5, height: 5, borderRadius: "50%",
-                              background: "#C08A5A", flexShrink: 0,
-                              boxShadow: "0 0 8px rgba(192,138,90,0.5)",
+                              background: "var(--theme-active-dot)", flexShrink: 0,
+                              boxShadow: "0 0 8px var(--theme-active-dot-glow)",
                             }} />
                           )}
                         </>
@@ -929,17 +926,20 @@ export function DashboardLayout({
         </aside>
 
         {/* Main */}
-        <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <main style={{
+          flex: 1, display: "flex", flexDirection: "column", overflow: "hidden",
+          background: isDark
+            ? "#0d3830"
+            : "url('/bg-light.gif') center no-repeat fixed, #DAD7C9",
+        }}>
           {/* Header */}
           <header style={{
             padding: "0 24px", height: 60,
             borderBottom: `1px solid ${C.border}`,
-            background: C.headerBg,
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
+            background: isDark ? "#0a2e25" : "#EAE7DB",
             display: "flex", alignItems: "center", justifyContent: "space-between",
             flexShrink: 0,
-            boxShadow: "0 2px 20px rgba(0,0,0,0.15)",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
           }}>
             {/* Left: hamburger toggle + breadcrumb */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -999,9 +999,9 @@ export function DashboardLayout({
                 <i className="fa-regular fa-bell" style={{ color: C.text2, fontSize: 14 }} />
                 <span style={{
                   position: "absolute", top: 8, right: 8, width: 5, height: 5,
-                  borderRadius: "50%", background: "#C08A5A",
-                  border: `1.5px solid ${C.headerBg}`,
-                  boxShadow: "0 0 6px rgba(192,138,90,0.5)",
+                  borderRadius: "50%", background: "var(--theme-active-dot)",
+                  border: `1.5px solid ${isDark ? "#0a2e25" : "#EAE7DB"}`,
+                  boxShadow: "0 0 6px var(--theme-active-dot-glow)",
                 }} />
               </button>
 
@@ -1009,7 +1009,7 @@ export function DashboardLayout({
                 style={{
                   width: 32, height: 32, borderRadius: 9,
                   background: meta.avatarGradient,
-                  color: "#EDE3D1", display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "var(--theme-icon-color)", display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 11, fontWeight: 700,
                   cursor: "pointer", flexShrink: 0,
                   position: "relative", overflow: "hidden",
@@ -1036,7 +1036,7 @@ export function DashboardLayout({
           {/* Scrollable content */}
           <div style={{
             flex: 1, overflowY: "auto", padding: "26px 28px",
-            background: C.pageBg,
+            background: "transparent",
             color: C.text1,
           }}>
             {children}

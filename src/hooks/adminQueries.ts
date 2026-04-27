@@ -662,10 +662,22 @@ export async function deletePrescription(
 
 // ─── Roles ─────────────────────────────────────────────────────────────────────
 
+/** Derive a consistent UI color from a role name (since `color` col doesn't exist in DB) */
+function roleNameToColor(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes("admin"))   return "#C08A5A"; // copper
+    if (n.includes("staff"))   return "#3A8F7A"; // sage
+    if (n.includes("patient")) return "#A9D8C8"; // mint
+    // Deterministic fallback based on string hash
+    const hash = [...n].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const hues = ["#6C9DB5", "#F2A7C0", "#4F7C8C", "#8BAFBF", "#9B8EA8"];
+    return hues[hash % hues.length];
+}
+
 export async function fetchRoles(): Promise<Role[]> {
     const { data: roles, error } = await supabase
         .from("role")
-        .select("role_id, role_name, color, permissions")
+        .select("role_id, role_name, permissions")
         .order("role_id");
 
     if (error) throw new Error(error.message || JSON.stringify(error));
@@ -683,7 +695,7 @@ export async function fetchRoles(): Promise<Role[]> {
     return (roles as any[]).map((r) => ({
         id: String(r.role_id),
         name: r.role_name,
-        color: r.color ?? "#16a34a",
+        color: roleNameToColor(r.role_name ?? ""),
         permissions: r.permissions ?? [],
         members: countMap[r.role_id] ?? 0,
     }));
@@ -697,9 +709,11 @@ export async function updateRole(
 ): Promise<void> {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
+    // Note: `color` is not a DB column — strip it before writing
+    const { color: _color, ...dbUpdates } = updates;
     const { error } = await supabase
         .from("role")
-        .update({ ...updates, actor_id: actorId })
+        .update({ ...dbUpdates, actor_id: actorId })
         .eq("role_id", roleId);
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
@@ -713,9 +727,10 @@ export async function createRole(
 ): Promise<void> {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
+    // Note: `color` is not a DB column — only write supported fields
     const { error } = await supabase
         .from("role")
-        .insert({ role_name: name, color, permissions, actor_id: actorId });
+        .insert({ role_name: name, permissions, actor_id: actorId });
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
