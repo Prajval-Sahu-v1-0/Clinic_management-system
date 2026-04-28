@@ -280,17 +280,17 @@ export function useInventory() {
         query.refetch();
     }, [query.refetch]);
 
-    const updateQty = useCallback(async (inventoryId: number, qty: number) => {
+    const updateQty = useCallback(async (inventoryId: string, qty: number) => {
         await updateInventoryQty(inventoryId, qty, session?.user?.id as string);
         query.refetch();
     }, [query.refetch]);
 
-    const remove = useCallback(async (inventoryId: number, medicineId: number) => {
+    const remove = useCallback(async (inventoryId: string, medicineId?: string | null) => {
         await removeInventoryItem(inventoryId, medicineId, session?.user?.id as string);
         query.refetch();
     }, [query.refetch]);
 
-    const upsert = useCallback(async (medicine_id: number, qty: number, reorder: number) => {
+    const upsert = useCallback(async (medicine_id: string, qty: number, reorder: number) => {
         await upsertInventoryItem(medicine_id, qty, reorder, session?.user?.id as string);
         query.refetch();
     }, [query.refetch]);

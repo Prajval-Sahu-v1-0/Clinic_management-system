@@ -258,7 +258,7 @@ export async function updateUserStatus(
     if (!session?.user?.id) throw new Error("Unauthorized");
     const { error } = await supabase
         .from("user")
-        .update({ status, actor_id: actorId })
+        .update({ status })
         .eq("user_id", userId);
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
@@ -713,7 +713,7 @@ export async function updateRole(
     const { color: _color, ...dbUpdates } = updates;
     const { error } = await supabase
         .from("role")
-        .update({ ...dbUpdates, actor_id: actorId })
+        .update({ ...dbUpdates })
         .eq("role_id", roleId);
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
@@ -730,7 +730,7 @@ export async function createRole(
     // Note: `color` is not a DB column — only write supported fields
     const { error } = await supabase
         .from("role")
-        .insert({ role_name: name, permissions, actor_id: actorId });
+        .insert({ role_name: name, permissions });
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
 
@@ -750,7 +750,7 @@ export async function changeUserPassword(
     const passwordHash = await bcrypt.hash(newPassword, 10);
     const { error } = await supabase
         .from("user")
-        .update({ password_hash: passwordHash, actor_id: actorId })
+        .update({ password_hash: passwordHash })
         .eq("user_id", userId);
     if (error) throw new Error(error.message || JSON.stringify(error));
 }
@@ -758,11 +758,11 @@ export async function changeUserPassword(
 // ─── Inventory ────────────────────────────────────────────────────────────────
 
 export type InventoryItem = {
-    inventory_id: number;
+    inventory_id: string;
     quantity_available: number;
     reorder_level: number;
     medicine: {
-        medicine_id: number;
+        medicine_id: string;
         medicine_name: string;
         category: string | null;
         manufacturer: string | null;
@@ -796,14 +796,14 @@ export async function addInventoryItem(
     if (!session?.user?.id) throw new Error("Unauthorized");
     const { data: med, error: me } = await supabase
         .from("medicine")
-        .insert({ medicine_name, category, manufacturer, expiry_date, actor_id: actorId })
+        .insert({ medicine_name, category, manufacturer, expiry_date })
         .select("medicine_id, medicine_name, category, manufacturer")
         .single();
     if (me) throw me;
 
     const { data: inv, error: ie } = await supabase
         .from("inventory")
-        .insert({ medicine_id: med.medicine_id, quantity_available, reorder_level, actor_id: actorId })
+        .insert({ medicine_id: med.medicine_id, quantity_available, reorder_level })
         .select()
         .single();
     if (ie) throw ie;
@@ -816,7 +816,7 @@ export async function addInventoryItem(
 }
 
 export type MedicineLookup = {
-    medicine_id: number;
+    medicine_id: string;
     medicine_name: string;
     category: string | null;
     manufacturer: string | null;
@@ -833,7 +833,7 @@ export async function fetchMedicines(): Promise<MedicineLookup[]> {
 }
 
 export async function upsertInventoryItem(
-    medicine_id: number,
+    medicine_id: string,
     quantity_to_add: number,
     reorder_level: number
 ,
@@ -851,7 +851,7 @@ export async function upsertInventoryItem(
         const afterQty = existing.quantity_available + quantity_to_add;
         const { error } = await supabase
             .from("inventory")
-            .update({ quantity_available: afterQty, actor_id: actorId })
+            .update({ quantity_available: afterQty })
             .eq("inventory_id", existing.inventory_id);
         if (error) throw new Error(error.message || JSON.stringify(error));
         await logAudit({
@@ -863,7 +863,7 @@ export async function upsertInventoryItem(
     } else {
         const { data: inv, error } = await supabase
             .from("inventory")
-            .insert({ medicine_id, quantity_available: quantity_to_add, reorder_level, actor_id: actorId })
+            .insert({ medicine_id, quantity_available: quantity_to_add, reorder_level })
             .select()
             .single();
         if (error) throw new Error(error.message || JSON.stringify(error));
@@ -876,7 +876,7 @@ export async function upsertInventoryItem(
 }
 
 export async function updateInventoryQty(
-    inventoryId: number,
+    inventoryId: string,
     quantity_available: number
 ,
     actorId: string
@@ -887,7 +887,7 @@ export async function updateInventoryQty(
     if (!existing) return;
     const { error } = await supabase
         .from("inventory")
-        .update({ quantity_available, actor_id: actorId })
+        .update({ quantity_available })
         .eq("inventory_id", inventoryId);
     if (error) throw new Error(error.message || JSON.stringify(error));
     await logAudit({
@@ -898,30 +898,31 @@ export async function updateInventoryQty(
 }
 
 export async function removeInventoryItem(
-    inventoryId: number,
-    medicineId: number
+    inventoryId: string,
+    medicineId: string | null | undefined
 ,
     actorId: string
 ): Promise<void> {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
-    const { data: existingMed } = await supabase.from("medicine").select("*").eq("medicine_id", medicineId).single();
-
     const { error: ie } = await supabase
         .from("inventory")
-        .delete({ actor_id: actorId } as any)
+        .delete()
         .eq("inventory_id", inventoryId);
     if (ie) throw ie;
-    const { error: me } = await supabase
-        .from("medicine")
-        .delete({ actor_id: actorId } as any)
-        .eq("medicine_id", medicineId);
-    if (me) throw me;
+
+    if (medicineId) {
+        const { error: me } = await supabase
+            .from("medicine")
+            .delete()
+            .eq("medicine_id", medicineId);
+        if (me) console.warn("Failed to delete medicine:", me);
+    }
 
     await logAudit({
         action: "delete", actor_id: actorId, actor_role: (session.user as any).role || "unknown",
         entity_type: "inventory", entity_id: String(inventoryId),
-        before_data: { medicine: existingMed }
+        before_data: { removed_inventory_id: inventoryId, removed_medicine_id: medicineId }
     });
 }
 

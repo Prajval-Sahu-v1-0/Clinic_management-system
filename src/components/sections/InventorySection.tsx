@@ -13,15 +13,15 @@ function invStatus(qty: number, reorder: number): { label: string; color: string
 
 export default function InventorySection() {
   const { data: items, loading, error, add, updateQty, remove, upsert } = useInventory();
-  const { data: medicines } = useMedicines();
+  const { data: medicines, refetch: refetchMedicines } = useMedicines();
 
   const [showAdd, setShowAdd]     = useState(false);
   const [saving, setSaving]       = useState(false);
   const [modalErr, setModalErr]   = useState("");
-  const [editQty, setEditQty]     = useState<Record<number, string>>({});
+  const [editQty, setEditQty]     = useState<Record<string, string>>({});
 
   const [mode, setMode]           = useState<"existing" | "new">("existing");
-  const [selectedMedId, setSelectedMedId] = useState<number | "">("");
+  const [selectedMedId, setSelectedMedId] = useState<string | number>("");
   const [qty, setQty]             = useState("");
   const [reorderLevel, setReorderLevel] = useState("10");
   const [newName, setNewName]     = useState("");
@@ -29,7 +29,7 @@ export default function InventorySection() {
   const [newMfr, setNewMfr]       = useState("");
   const [newExpiry, setNewExpiry] = useState("");
 
-  const selectedMed = (medicines ?? []).find(m => m.medicine_id === selectedMedId);
+  const selectedMed = (medicines ?? []).find(m => String(m.medicine_id) === String(selectedMedId));
 
   const resetModal = () => {
     setMode("existing"); setSelectedMedId(""); setQty(""); setReorderLevel("10");
@@ -42,10 +42,11 @@ export default function InventorySection() {
     try {
       if (mode === "existing") {
         if (!selectedMedId) { setModalErr("Select a product."); setSaving(false); return; }
-        await upsert(Number(selectedMedId), Number(qty), Number(reorderLevel) || 10);
+        await upsert(String(selectedMedId), Number(qty), Number(reorderLevel) || 10);
       } else {
         if (!newName.trim()) { setModalErr("Medicine name is required."); setSaving(false); return; }
         await add(newName.trim(), newCat.trim() || null, newMfr.trim() || null, newExpiry || null, Number(qty), Number(reorderLevel) || 10);
+        refetchMedicines();
       }
       setShowAdd(false);
       resetModal();
@@ -53,16 +54,17 @@ export default function InventorySection() {
     finally { setSaving(false); }
   };
 
-  const handleUpdateQty = async (inventoryId: number) => {
+  const handleUpdateQty = async (inventoryId: string) => {
     const val = Number(editQty[inventoryId]);
     if (isNaN(val) || val < 0) return;
     await updateQty(inventoryId, val);
     setEditQty(prev => { const n = { ...prev }; delete n[inventoryId]; return n; });
   };
 
-  const handleRemove = async (inventoryId: number, medicineId: number) => {
+  const handleRemove = async (inventoryId: string, medicineId?: string | null) => {
     if (!confirm("Remove this item from inventory?")) return;
     await remove(inventoryId, medicineId);
+    refetchMedicines();
   };
 
   const inputStyle: React.CSSProperties = {
@@ -212,7 +214,7 @@ export default function InventorySection() {
                   <div>
                     <label style={labelStyle}>Select Product *</label>
                     <select value={selectedMedId}
-                      onChange={e => setSelectedMedId(e.target.value === "" ? "" : Number(e.target.value))}
+                      onChange={e => setSelectedMedId(e.target.value)}
                       style={inputStyle}>
                       <option value="">— choose a product —</option>
                       {(medicines ?? []).map(m => (
