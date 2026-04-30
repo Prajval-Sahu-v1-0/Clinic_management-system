@@ -86,6 +86,66 @@ ENV → CONNECT → SYNC → RUN
 
 ---
 
+````md
+## 🔐 Google OAuth (Extension)
+
+```text
+[ GOOGLE → SUPABASE → APP ]
+````
+
+### Setup
+
+1. Create OAuth client in Google Cloud Console
+2. Type: `Web Application`
+
+---
+
+### 🔗 Authorized Origins
+
+```
+http://localhost:3000
+<your-deployment-URL>
+```
+
+---
+
+### 🔁 Redirect URI (required)
+
+```
+https://<PROJECT_ID>.supabase.co/auth/v1/callback
+```
+
+---
+
+### ☁️ Supabase
+
+* Auth → Providers → Google
+* Add Client ID + Secret
+
+---
+
+### 💻 Frontend
+
+```ts
+await supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: {
+    redirectTo: "http://localhost:3000/dashboard"
+  }
+})
+```
+
+---
+
+```text
+FLOW:
+USER → GOOGLE → /auth/v1/callback → APP
+```
+
+```
+```
+
+
 ## 🧪 Live Preview
 
 ```
